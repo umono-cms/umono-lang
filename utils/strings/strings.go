@@ -36,3 +36,21 @@ func IndexesByRegex(s, regex string) []int {
 
 	return indexes
 }
+
+func FindAllString(s string, regex string, trimRegex string) []string {
+	re := regexp.MustCompile(regex)
+	strs := re.FindAllString(s, -1)
+
+	if trimRegex == "" {
+		return strs
+	}
+
+	re2 := regexp.MustCompile(trimRegex)
+
+	trimmed := []string{}
+	for _, str := range strs {
+		trimmed = append(trimmed, re2.ReplaceAllString(str, ""))
+	}
+
+	return trimmed
+}

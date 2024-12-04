@@ -22,25 +22,20 @@ func New(converter interfaces.Converter) *UmonoLang {
 func (ul *UmonoLang) Convert(raw string) string {
 
 	realContent := raw
-	compContentMap := map[string]string{}
+	localeCompMaps := map[string]string{}
 
 	firstTildeIndex := strings.Index(raw, "\n~")
 	if firstTildeIndex != -1 {
 		realContent = raw[:firstTildeIndex]
-		compContentMap = ul.resolveCompContentMap(raw[firstTildeIndex:])
+		localeCompMaps = ul.readLocaleComponents(raw[firstTildeIndex:])
 	}
 
-	convertedRealContent := ul.converter.Convert(realContent)
+	realContent = ul.convert(realContent, localeCompMaps, 1)
 
-	for compName, content := range compContentMap {
-		re := regexp.MustCompile(fmt.Sprintf(`\{\{\s*%s\s*\}\}`, compName))
-		convertedRealContent = re.ReplaceAllString(convertedRealContent, "\n"+ul.converter.Convert(content)+"\n")
-	}
-
-	return convertedRealContent
+	return realContent
 }
 
-func (ul *UmonoLang) resolveCompContentMap(localeCompsRaw string) map[string]string {
+func (ul *UmonoLang) readLocaleComponents(localeCompsRaw string) map[string]string {
 
 	localeCompsIndexes := ustrings.IndexesByRegex(localeCompsRaw, `\n~\s*[A-Z0-9_]+\s*\n`)
 
@@ -66,4 +61,28 @@ func (ul *UmonoLang) resolveCompContentMap(localeCompsRaw string) map[string]str
 	}
 
 	return compContentMap
+}
+
+func (ul *UmonoLang) convert(content string, compMap map[string]string, deep int) string {
+
+	if deep == 20 {
+		return ""
+	}
+
+	comps := ustrings.FindAllString(content, `\{\{\s*[A-Z0-9_]+\s*\}\}`, `^\s*\{\{\s*|\s*\}\}\s*$`)
+
+	contConverted := ul.converter.Convert(content)
+
+	for _, comp := range comps {
+		cont, ok := compMap[comp]
+		if !ok {
+			continue
+		}
+
+		converted := ul.convert(cont, compMap, deep+1)
+		re := regexp.MustCompile(fmt.Sprintf(`\{\{\s*%s\s*\}\}`, comp))
+		contConverted = re.ReplaceAllString(contConverted, "\n"+converted+"\n")
+	}
+
+	return contConverted
 }
