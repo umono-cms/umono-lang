@@ -24,15 +24,29 @@ func (ul *UmonoLang) Convert(raw string) string {
 	realContent := raw
 	localeCompMaps := map[string]string{}
 
-	firstTildeIndex := strings.Index(raw, "\n~")
-	if firstTildeIndex != -1 {
-		realContent = raw[:firstTildeIndex]
-		localeCompMaps = ul.readLocaleComponents(raw[firstTildeIndex:])
+	firstCompDefIndex := ul.findFirstCompDefIndex(raw)
+
+	if firstCompDefIndex != -1 {
+		realContent = raw[:firstCompDefIndex]
+		localeCompMaps = ul.readLocaleComponents(raw[firstCompDefIndex:])
 	}
 
 	realContent = ul.convert(realContent, localeCompMaps, 1)
 
 	return realContent
+}
+
+func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
+
+	re := regexp.MustCompile(`\n~\s*[A-Z0-9_]+\s*\n`)
+
+	match := re.FindStringIndex(raw)
+
+	if match != nil {
+		return match[0]
+	}
+
+	return -1
 }
 
 func (ul *UmonoLang) readLocaleComponents(localeCompsRaw string) map[string]string {
@@ -54,8 +68,16 @@ func (ul *UmonoLang) readLocaleComponents(localeCompsRaw string) map[string]stri
 		trimmed := strings.TrimSpace(compRaw)
 		endOfCompName := strings.Index(trimmed, "\n")
 
-		compNameRaw := trimmed[0:endOfCompName]
-		compContentRaw := trimmed[endOfCompName:]
+		var compNameRaw string
+		var compContentRaw string
+
+		if endOfCompName == -1 {
+			compNameRaw = trimmed
+			compContentRaw = ""
+		} else {
+			compNameRaw = trimmed[0:endOfCompName]
+			compContentRaw = trimmed[endOfCompName:]
+		}
 
 		compContentMap[re.ReplaceAllString(compNameRaw, "")] = strings.TrimSpace(compContentRaw)
 	}
