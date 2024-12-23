@@ -103,8 +103,8 @@ func (ul *UmonoLang) convert(content string, compMap map[string]string, deep int
 
 		converted := ul.convert(cont, compMap, deep+1)
 		re := regexp.MustCompile(fmt.Sprintf(`\{\{\s*%s\s*\}\}`, comp))
-		contConverted = re.ReplaceAllString(contConverted, "\n"+converted+"\n")
+		contConverted = re.ReplaceAllString(contConverted, converted)
 	}
 
-	return contConverted
+	return strings.TrimSpace(contConverted)
 }
