@@ -1,0 +1,12 @@
+{{ HEADER }}
+{{ CONTENT }}
+{{ FOOTER }}
+
+~ FOOTER
+input0
+
+~ CONTENT
+input1
+
+~ HEADER
+input2

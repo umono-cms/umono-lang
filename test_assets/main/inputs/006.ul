@@ -1,10 +1,10 @@
 {{ HEADER }} {{ CONTENT }} {{ FOOTER }}
 
 ~ HEADER
-input
+input0
 
 ~ CONTENT
-input
+input1
 
 ~ FOOTER
-input
+input2
