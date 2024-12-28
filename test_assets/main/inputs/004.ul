@@ -1,0 +1,3 @@
+input {{ COMPONENT }}
+~ COMPONENT
+input

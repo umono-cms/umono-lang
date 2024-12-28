@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/umono-cms/umono-lang/utils/mocks"
+	"github.com/umono-cms/umono-lang/utils/test"
 )
 
 type UmonoLangTestSuite struct {
@@ -17,45 +18,28 @@ func (s *UmonoLangTestSuite) SetupTest() {
 
 }
 
-func (s *UmonoLangTestSuite) TestConvertBasics() {
+func (s *UmonoLangTestSuite) TestConvert() {
 
 	converter := new(mocks.Converter)
 	umonoLang := New(converter)
 
-	for _, scene := range []struct {
-		input  string
-		output string
-	}{
-		{
-			input:  "",
-			output: "",
-		},
-		{
-			input:  "input",
-			output: "output",
-		},
-		{
-			input:  "input\ninput",
-			output: "outputoutput",
-		},
-		{
-			input:  "{{COMPONENT}}\n~COMPONENT\ninput",
-			output: "output",
-		},
-		{
-			input:  "input{{COMPONENT}}\n~COMPONENT\ninput",
-			output: "outputoutput",
-		},
-		{
-			input:  "{{HEADER}} {{CONTENT}} \n~HEADER\ninput\n~CONTENT\ninput",
-			output: "output output",
-		},
-		{
-			input:  "{{HEADER}} {{CONTENT}} {{ FOOTER }} \n~HEADER\ninput\n~CONTENT\ninput\n~FOOTER\ninput",
-			output: "output output output",
-		},
-	} {
-		require.Equal(s.T(), scene.output, umonoLang.Convert(scene.input))
+	inputFileReader := test.NewFileReader("test_assets/main/inputs", "ul")
+	outputFileReader := test.NewFileReader("test_assets/main/outputs", "mock")
+
+	inputDirReader := test.NewDirectoryReader("test_assets/main/inputs")
+	inputs, err := inputDirReader.ReadWithoutExt()
+
+	require.Nil(s.T(), err)
+
+	for _, input := range inputs {
+
+		inputCont, err := inputFileReader.Read(input, false)
+		require.Nil(s.T(), err)
+
+		outputCont, err := outputFileReader.Read(input, true)
+		require.Nil(s.T(), err)
+
+		require.Equal(s.T(), outputCont, umonoLang.Convert(inputCont), "input file name: "+input+".ul")
 	}
 }
 
