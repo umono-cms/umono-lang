@@ -31,7 +31,7 @@ func (ul *UmonoLang) Convert(raw string) string {
 		localeCompMaps = ul.readLocaleComponents(raw[firstCompDefIndex:])
 	}
 
-	realContent = ul.convert(realContent, localeCompMaps, 1)
+	realContent = ul.handleComps(realContent, localeCompMaps, 1)
 
 	return realContent
 }
@@ -85,13 +85,13 @@ func (ul *UmonoLang) readLocaleComponents(localeCompsRaw string) map[string]stri
 	return compContentMap
 }
 
-func (ul *UmonoLang) convert(content string, compMap map[string]string, deep int) string {
+func (ul *UmonoLang) handleComps(content string, compMap map[string]string, deep int) string {
 
 	if deep == 20 {
 		return ""
 	}
 
-	comps := ustrings.FindAllString(content, `\{\{\s*[A-Z0-9_]+\s*\}\}`, `^\s*\{\{\s*|\s*\}\}\s*$`)
+	comps := ustrings.FindAllString(content, `\s*[A-Z0-9_]+\s*`, `^\s*|\s*$`)
 
 	contConverted := ul.converter.Convert(content)
 
@@ -101,9 +101,8 @@ func (ul *UmonoLang) convert(content string, compMap map[string]string, deep int
 			continue
 		}
 
-		converted := ul.convert(cont, compMap, deep+1)
-		re := regexp.MustCompile(fmt.Sprintf(`\{\{\s*%s\s*\}\}`, comp))
-		contConverted = re.ReplaceAllString(contConverted, converted)
+		re := regexp.MustCompile(fmt.Sprintf(`%s`, comp))
+		contConverted = re.ReplaceAllString(contConverted, ul.handleComps(cont, compMap, deep+1))
 	}
 
 	return strings.TrimSpace(contConverted)

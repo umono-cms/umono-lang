@@ -1,6 +1,6 @@
-{{ HEADER }}
-{{ CONTENT }}
-{{ FOOTER }}
+HEADER
+CONTENT
+FOOTER
 
 ~ FOOTER
 input0

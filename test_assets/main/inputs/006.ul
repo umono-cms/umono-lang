@@ -1,4 +1,4 @@
-{{ HEADER }} {{ CONTENT }} {{ FOOTER }}
+HEADER CONTENT FOOTER
 
 ~ HEADER
 input0
