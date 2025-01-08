@@ -5,35 +5,67 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/interfaces"
 	ustrings "github.com/umono-cms/umono-lang/utils/strings"
 )
 
 type UmonoLang struct {
-	converter interfaces.Converter
+	converter        interfaces.Converter
+	builtInComps     []interfaces.Component
+	builtInCompNames []string
 }
 
 func New(converter interfaces.Converter) *UmonoLang {
+
+	builtInComps := []interfaces.Component{
+		&components.Container{},
+		&components.Row{},
+		&components.Col{},
+		&components.Link{},
+	}
+
+	builtInCompNames := []string{}
+	for _, b := range builtInComps {
+		builtInCompNames = append(builtInCompNames, b.Name())
+	}
+
 	return &UmonoLang{
-		converter: converter,
+		converter:        converter,
+		builtInComps:     builtInComps,
+		builtInCompNames: builtInCompNames,
 	}
 }
 
 func (ul *UmonoLang) Convert(raw string) string {
 
 	realContent := raw
-	localeCompMaps := map[string]string{}
+	localeCompMap := map[string]string{}
 
 	firstCompDefIndex := ul.findFirstCompDefIndex(raw)
 
 	if firstCompDefIndex != -1 {
 		realContent = raw[:firstCompDefIndex]
-		localeCompMaps = ul.readLocaleComponents(raw[firstCompDefIndex:])
+		localeCompMap = ul.readLocaleComponents(raw[firstCompDefIndex:])
 	}
 
-	realContent = ul.handleComps(realContent, localeCompMaps, 1)
+	// TODO: Complete it
+	builtInCompMap := ul.readBuiltInComponents(realContent)
 
-	return realContent
+	// TODO: Fill from global
+	globalCompMap := map[string]string{}
+
+	compMap := builtInCompMap
+
+	for name, content := range globalCompMap {
+		compMap[name] = content
+	}
+
+	for name, content := range localeCompMap {
+		compMap[name] = content
+	}
+
+	return ul.handleComps(realContent, compMap, 1)
 }
 
 func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
@@ -85,6 +117,10 @@ func (ul *UmonoLang) readLocaleComponents(localeCompsRaw string) map[string]stri
 	return compContentMap
 }
 
+func (ul *UmonoLang) readBuiltInComponents(raw string) map[string]string {
+	return map[string]string{}
+}
+
 func (ul *UmonoLang) handleComps(content string, compMap map[string]string, deep int) string {
 
 	if deep == 20 {
@@ -93,7 +129,7 @@ func (ul *UmonoLang) handleComps(content string, compMap map[string]string, deep
 
 	comps := ustrings.FindAllString(content, `\s*[A-Z0-9_]+\s*`, `^\s*|\s*$`)
 
-	contConverted := ul.converter.Convert(content)
+	converted := ul.converter.Convert(content)
 
 	for _, comp := range comps {
 		cont, ok := compMap[comp]
@@ -102,8 +138,8 @@ func (ul *UmonoLang) handleComps(content string, compMap map[string]string, deep
 		}
 
 		re := regexp.MustCompile(fmt.Sprintf(`%s`, comp))
-		contConverted = re.ReplaceAllString(contConverted, ul.handleComps(cont, compMap, deep+1))
+		converted = re.ReplaceAllString(converted, ul.handleComps(cont, compMap, deep+1))
 	}
 
-	return strings.TrimSpace(contConverted)
+	return strings.TrimSpace(converted)
 }
