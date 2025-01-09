@@ -12,6 +12,7 @@ import (
 
 type UmonoLang struct {
 	converter        interfaces.Converter
+	globalCompMap    map[string]string
 	builtInComps     []interfaces.Component
 	builtInCompNames []string
 }
@@ -32,6 +33,7 @@ func New(converter interfaces.Converter) *UmonoLang {
 
 	return &UmonoLang{
 		converter:        converter,
+		globalCompMap:    make(map[string]string),
 		builtInComps:     builtInComps,
 		builtInCompNames: builtInCompNames,
 	}
@@ -52,12 +54,9 @@ func (ul *UmonoLang) Convert(raw string) string {
 	// TODO: Complete it
 	builtInCompMap := ul.readBuiltInComponents(realContent)
 
-	// TODO: Fill from global
-	globalCompMap := map[string]string{}
-
 	compMap := builtInCompMap
 
-	for name, content := range globalCompMap {
+	for name, content := range ul.globalCompMap {
 		compMap[name] = content
 	}
 
@@ -66,6 +65,10 @@ func (ul *UmonoLang) Convert(raw string) string {
 	}
 
 	return ul.handleComps(realContent, compMap, 1)
+}
+
+func (ul *UmonoLang) SetGlobalComponent(name, content string) {
+	ul.globalCompMap[name] = content
 }
 
 func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
