@@ -1,6 +1,7 @@
 package umonolang
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -67,12 +68,36 @@ func (ul *UmonoLang) Convert(raw string) string {
 	return ul.handleComps(realContent, compMap, 1)
 }
 
-func (ul *UmonoLang) SetGlobalComponent(name, content string) {
+func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
+
+	if !ustrings.IsScreamingSnakeCase(name) {
+		return errors.New("SYNTAX_ERROR: Component names have to be SCREAMING_SNAKE_CASE.")
+	}
+
 	ul.globalCompMap[name] = content
+
+	return nil
+}
+
+func (ul *UmonoLang) RemoveGlobalComponent(name string) error {
+
+	if !ustrings.IsScreamingSnakeCase(name) {
+		return errors.New("SYNTAX_ERROR: Component names have to be SCREAMING_SNAKE_CASE.")
+	}
+
+	_, ok := ul.globalCompMap[name]
+	if !ok {
+		return fmt.Errorf("NOT_FOUND: The global component named '%s' not found.", name)
+	}
+
+	delete(ul.globalCompMap, name)
+
+	return nil
 }
 
 func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
 
+	// TODO: Fix regexp to ignore start or multiple with _
 	re := regexp.MustCompile(`\n~\s*[A-Z0-9_]+\s*\n`)
 
 	match := re.FindStringIndex(raw)
@@ -86,6 +111,7 @@ func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
 
 func (ul *UmonoLang) readLocaleComponents(localeCompsRaw string) map[string]string {
 
+	// TODO: Fix regexp to ignore start or multiple with _
 	localeCompsIndexes := ustrings.IndexesByRegex(localeCompsRaw, `\n~\s*[A-Z0-9_]+\s*\n`)
 
 	compContentMap := map[string]string{}
@@ -130,6 +156,7 @@ func (ul *UmonoLang) handleComps(content string, compMap map[string]string, deep
 		return ""
 	}
 
+	// TODO: Fix regexp to ignore start or multiple with _
 	comps := ustrings.FindAllString(content, `\s*[A-Z0-9_]+\s*`, `^\s*|\s*$`)
 
 	converted := ul.converter.Convert(content)

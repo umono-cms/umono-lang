@@ -54,3 +54,8 @@ func FindAllString(s string, regex string, trimRegex string) []string {
 
 	return trimmed
 }
+
+func IsScreamingSnakeCase(s string) bool {
+	re := regexp.MustCompile(`^[A-Z0-9]+(?:_[A-Z0-9]+)*$`)
+	return re.MatchString(s)
+}

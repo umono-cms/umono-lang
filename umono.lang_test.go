@@ -1,6 +1,7 @@
 package umonolang
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,14 +16,10 @@ type UmonoLangTestSuite struct {
 }
 
 func (s *UmonoLangTestSuite) SetupTest() {
-
+	s.umonoLang = New(new(mocks.Converter))
 }
 
 func (s *UmonoLangTestSuite) TestConvert() {
-
-	converter := new(mocks.Converter)
-	umonoLang := New(converter)
-
 	inputFileReader := test.NewFileReader("test_assets/main/inputs", "ul")
 	outputFileReader := test.NewFileReader("test_assets/main/outputs", "mock")
 
@@ -39,8 +36,43 @@ func (s *UmonoLangTestSuite) TestConvert() {
 		outputCont, err := outputFileReader.Read(input, true)
 		require.Nil(s.T(), err)
 
-		require.Equal(s.T(), outputCont, umonoLang.Convert(inputCont), "input file name: "+input+".ul")
+		require.Equal(s.T(), outputCont, s.umonoLang.Convert(inputCont), "input file name: "+input+".ul")
 	}
+}
+
+func (s *UmonoLangTestSuite) TestSetGlobalComponentOK() {
+	s.umonoLang.SetGlobalComponent("HELLO_WORLD", "hello!")
+	hello, ok := s.umonoLang.globalCompMap["HELLO_WORLD"]
+
+	require.True(s.T(), ok)
+	require.Equal(s.T(), "hello!", hello)
+}
+
+func (s *UmonoLangTestSuite) TestSetGlobalComponentSyntaxError() {
+	err := s.umonoLang.SetGlobalComponent("HELLO WORLD", "hello!")
+	require.NotNil(s.T(), err)
+	require.True(s.T(), strings.HasPrefix(err.Error(), "SYNTAX_ERROR"))
+}
+
+func (s *UmonoLangTestSuite) TestRemoveGlobalComponentOK() {
+	s.umonoLang.globalCompMap["HELLO_WORLD"] = "hello!"
+	err := s.umonoLang.RemoveGlobalComponent("HELLO_WORLD")
+	require.Nil(s.T(), err)
+
+	_, ok := s.umonoLang.globalCompMap["HELLO_WORLD"]
+	require.False(s.T(), ok)
+}
+
+func (s *UmonoLangTestSuite) TestRemoveGlobalComponentSyntaxError() {
+	err := s.umonoLang.RemoveGlobalComponent("hello world")
+	require.NotNil(s.T(), err)
+	require.True(s.T(), strings.HasPrefix(err.Error(), "SYNTAX_ERROR"))
+}
+
+func (s *UmonoLangTestSuite) TestRemoveGlobalComponentNotFound() {
+	err := s.umonoLang.RemoveGlobalComponent("HELLO_WORLD")
+	require.NotNil(s.T(), err)
+	require.True(s.T(), strings.HasPrefix(err.Error(), "NOT_FOUND"))
 }
 
 func TestUmonoLangTestSuite(t *testing.T) {
