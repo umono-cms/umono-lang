@@ -70,7 +70,7 @@ func (ul *UmonoLang) Convert(raw string) string {
 
 func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
 
-	if !ustrings.IsScreamingSnakeCase(name) {
+	if !ustrings.IsNumericScreamingSnakeCase(name) {
 		return errors.New("SYNTAX_ERROR: Component names have to be SCREAMING_SNAKE_CASE.")
 	}
 
@@ -81,7 +81,7 @@ func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
 
 func (ul *UmonoLang) RemoveGlobalComponent(name string) error {
 
-	if !ustrings.IsScreamingSnakeCase(name) {
+	if !ustrings.IsNumericScreamingSnakeCase(name) {
 		return errors.New("SYNTAX_ERROR: Component names have to be SCREAMING_SNAKE_CASE.")
 	}
 
