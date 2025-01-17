@@ -97,8 +97,7 @@ func (ul *UmonoLang) RemoveGlobalComponent(name string) error {
 
 func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
 
-	// TODO: Fix regexp to ignore start or multiple with _
-	re := regexp.MustCompile(`\n~\s*[A-Z0-9_]+\s*\n`)
+	re := regexp.MustCompile(`\n~\s+[A-Z0-9]+(?:_[A-Z0-9]+)?\s*\n`)
 
 	match := re.FindStringIndex(raw)
 
@@ -111,8 +110,7 @@ func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
 
 func (ul *UmonoLang) readLocaleComponents(localeCompsRaw string) map[string]string {
 
-	// TODO: Fix regexp to ignore start or multiple with _
-	localeCompsIndexes := ustrings.IndexesByRegex(localeCompsRaw, `\n~\s*[A-Z0-9_]+\s*\n`)
+	localeCompsIndexes := ustrings.IndexesByRegex(localeCompsRaw, `\n~\s+[A-Z0-9_]+(?:_[A-Z0-9]+)?\s*\n`)
 
 	compContentMap := map[string]string{}
 
@@ -156,8 +154,7 @@ func (ul *UmonoLang) handleComps(content string, compMap map[string]string, deep
 		return ""
 	}
 
-	// TODO: Fix regexp to ignore start or multiple with _
-	comps := ustrings.FindAllString(content, `\s*[A-Z0-9_]+\s*`, `^\s*|\s*$`)
+	comps := ustrings.FindAllString(content, `\s*[A-Z0-9_]+(?:_[A-Z0-9]+)?\s*`, `^\s*|\s*$`)
 
 	converted := ul.converter.Convert(content)
 
