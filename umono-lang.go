@@ -6,37 +6,19 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/interfaces"
 	ustrings "github.com/umono-cms/umono-lang/utils/strings"
 )
 
 type UmonoLang struct {
-	converter        interfaces.Converter
-	globalCompMap    map[string]string
-	builtInComps     []interfaces.Component
-	builtInCompNames []string
+	converter     interfaces.Converter
+	globalCompMap map[string]string
 }
 
 func New(converter interfaces.Converter) *UmonoLang {
-
-	builtInComps := []interfaces.Component{
-		&components.Container{},
-		&components.Row{},
-		&components.Col{},
-		&components.Link{},
-	}
-
-	builtInCompNames := []string{}
-	for _, b := range builtInComps {
-		builtInCompNames = append(builtInCompNames, b.Name())
-	}
-
 	return &UmonoLang{
-		converter:        converter,
-		globalCompMap:    make(map[string]string),
-		builtInComps:     builtInComps,
-		builtInCompNames: builtInCompNames,
+		converter:     converter,
+		globalCompMap: make(map[string]string),
 	}
 }
 
