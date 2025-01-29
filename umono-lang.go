@@ -47,7 +47,7 @@ func (ul *UmonoLang) Convert(raw string) string {
 		compMap[name] = content
 	}
 
-	return ul.handleComps(realContent, compMap, 1)
+	return ul.converter.Convert(ul.handleComps(realContent, compMap, 1))
 }
 
 func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
@@ -138,7 +138,7 @@ func (ul *UmonoLang) handleComps(content string, compMap map[string]string, deep
 
 	comps := ustrings.FindAllString(content, `\s*[A-Z0-9_]+(?:_[A-Z0-9]+)*\s*`, `^\s*|\s*$`)
 
-	converted := ul.converter.Convert(content)
+	handled := content
 
 	for _, comp := range comps {
 		cont, ok := compMap[comp]
@@ -147,8 +147,8 @@ func (ul *UmonoLang) handleComps(content string, compMap map[string]string, deep
 		}
 
 		re := regexp.MustCompile(fmt.Sprintf(`%s`, comp))
-		converted = re.ReplaceAllString(converted, ul.handleComps(cont, compMap, deep+1))
+		handled = re.ReplaceAllString(handled, ul.handleComps(cont, compMap, deep+1))
 	}
 
-	return strings.TrimSpace(converted)
+	return strings.TrimSpace(handled)
 }
