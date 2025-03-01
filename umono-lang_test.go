@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/utils/mocks"
 	"github.com/umono-cms/umono-lang/utils/test"
 )
@@ -45,7 +46,7 @@ func (s *UmonoLangTestSuite) TestSetGlobalComponentOK() {
 	hello, ok := s.umonoLang.globalCompMap["HELLO_WORLD"]
 
 	require.True(s.T(), ok)
-	require.Equal(s.T(), "hello!", hello)
+	require.Equal(s.T(), "hello!", hello.RawContent())
 }
 
 func (s *UmonoLangTestSuite) TestSetGlobalComponentSyntaxError() {
@@ -55,7 +56,7 @@ func (s *UmonoLangTestSuite) TestSetGlobalComponentSyntaxError() {
 }
 
 func (s *UmonoLangTestSuite) TestRemoveGlobalComponentOK() {
-	s.umonoLang.globalCompMap["HELLO_WORLD"] = "hello!"
+	s.umonoLang.globalCompMap["HELLO_WORLD"] = components.NewCustom("HELO_WORLD", "hello!")
 	err := s.umonoLang.RemoveGlobalComponent("HELLO_WORLD")
 	require.Nil(s.T(), err)
 

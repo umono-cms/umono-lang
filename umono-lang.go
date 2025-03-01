@@ -6,48 +6,62 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/interfaces"
 	ustrings "github.com/umono-cms/umono-lang/utils/strings"
 )
 
 type UmonoLang struct {
 	converter     interfaces.Converter
-	globalCompMap map[string]string
+	globalCompMap map[string]interfaces.Component
 }
 
 func New(converter interfaces.Converter) *UmonoLang {
 	return &UmonoLang{
 		converter:     converter,
-		globalCompMap: make(map[string]string),
+		globalCompMap: make(map[string]interfaces.Component),
 	}
 }
 
 func (ul *UmonoLang) Convert(raw string) string {
 
 	realContent := raw
-	localeCompMap := map[string]string{}
+	localCompMap := map[string]interfaces.Component{}
 
 	firstCompDefIndex := ul.findFirstCompDefIndex(raw)
 
 	if firstCompDefIndex != -1 {
 		realContent = raw[:firstCompDefIndex]
-		localeCompMap = ul.readLocaleComponents(raw[firstCompDefIndex:])
+		localCompMap = ul.readLocalComponents(raw[firstCompDefIndex:])
 	}
 
-	// TODO: Complete it
-	builtInCompMap := ul.readBuiltInComponents(realContent)
+	compMap := builtInCompMap()
 
-	compMap := builtInCompMap
-
-	for name, content := range ul.globalCompMap {
-		compMap[name] = content
+	for name, gc := range ul.globalCompMap {
+		compMap[name] = gc
 	}
 
-	for name, content := range localeCompMap {
-		compMap[name] = content
+	for name, lc := range localCompMap {
+		compMap[name] = lc
 	}
 
-	return ul.converter.Convert(ul.handleComps(realContent, compMap, 1))
+	preConverted := ul.converter.Convert(ul.handleComps(realContent, compMap, 1))
+
+	return preConverted
+}
+
+func builtInCompMap() map[string]interfaces.Component {
+	bcm := map[string]interfaces.Component{}
+
+	builtInComps := []interfaces.Component{
+		&components.Link{},
+	}
+
+	for _, bc := range builtInComps {
+		bcm[bc.Name()] = bc
+	}
+
+	return bcm
 }
 
 func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
@@ -56,7 +70,7 @@ func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
 		return errors.New("SYNTAX_ERROR: Component names have to be SCREAMING_SNAKE_CASE.")
 	}
 
-	ul.globalCompMap[name] = content
+	ul.globalCompMap[name] = components.NewCustom(name, content)
 
 	return nil
 }
@@ -90,11 +104,11 @@ func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
 	return -1
 }
 
-func (ul *UmonoLang) readLocaleComponents(localeCompsRaw string) map[string]string {
+func (ul *UmonoLang) readLocalComponents(localeCompsRaw string) map[string]interfaces.Component {
 
 	localeCompsIndexes := ustrings.IndexesByRegex(localeCompsRaw, `\n~\s+[A-Z0-9_]+(?:_[A-Z0-9]+)*\s*\n`)
 
-	compContentMap := map[string]string{}
+	compContentMap := map[string]interfaces.Component{}
 
 	re := regexp.MustCompile(`(?s)^~\s*|\s*\n$`)
 
@@ -120,7 +134,8 @@ func (ul *UmonoLang) readLocaleComponents(localeCompsRaw string) map[string]stri
 			compContentRaw = trimmed[endOfCompName:]
 		}
 
-		compContentMap[re.ReplaceAllString(compNameRaw, "")] = strings.TrimSpace(compContentRaw)
+		compName := re.ReplaceAllString(compNameRaw, "")
+		compContentMap[compName] = components.NewCustom(compName, strings.TrimSpace(compContentRaw))
 	}
 
 	return compContentMap
@@ -130,7 +145,7 @@ func (ul *UmonoLang) readBuiltInComponents(raw string) map[string]string {
 	return map[string]string{}
 }
 
-func (ul *UmonoLang) handleComps(content string, compMap map[string]string, deep int) string {
+func (ul *UmonoLang) handleComps(content string, compMap map[string]interfaces.Component, deep int) string {
 
 	if deep == 20 {
 		return ""
@@ -140,14 +155,14 @@ func (ul *UmonoLang) handleComps(content string, compMap map[string]string, deep
 
 	handled := content
 
-	for _, comp := range comps {
-		cont, ok := compMap[comp]
-		if !ok {
+	for _, compName := range comps {
+		comp, ok := compMap[compName]
+		if !ok || comp.PutAfterConvert() {
 			continue
 		}
 
-		re := regexp.MustCompile(fmt.Sprintf(`%s`, comp))
-		handled = re.ReplaceAllString(handled, ul.handleComps(cont, compMap, deep+1))
+		re := regexp.MustCompile(fmt.Sprintf(`%s`, compName))
+		handled = re.ReplaceAllString(handled, ul.handleComps(comp.RawContent(), compMap, deep+1))
 	}
 
 	return strings.TrimSpace(handled)
