@@ -26,6 +26,6 @@ func (c *Custom) RawContent() string {
 	return c.rawContent
 }
 
-func (c *Custom) PutAfterConvert() bool {
+func (c *Custom) NeedToConvert() bool {
 	return false
 }

@@ -19,5 +19,5 @@ func (*Link) Arguments() []interfaces.Argument {
 	}
 }
 
-func (*Link) RawContent() string    { return "" }
-func (*Link) PutAfterConvert() bool { return true }
+func (*Link) RawContent() string  { return "" }
+func (*Link) NeedToConvert() bool { return true }

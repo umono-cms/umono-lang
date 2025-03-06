@@ -55,6 +55,32 @@ func FindAllString(s string, regex string, trimRegex string) []string {
 	return trimmed
 }
 
+func FindAllStringIndex(s string, regex string) [][]int {
+	re := regexp.MustCompile(regex)
+	indexes := re.FindAllStringIndex(s, -1)
+
+	byteToRune := func(byteIdx int) int {
+		return len([]rune(s[:byteIdx]))
+	}
+
+	var runeIndexes [][]int
+	for _, idx := range indexes {
+		runeIndexes = append(runeIndexes, []int{byteToRune(idx[0]), byteToRune(idx[1])})
+	}
+
+	return runeIndexes
+}
+
+func ReplaceSubstring(s string, newSub string, start int, end int) string {
+	runes := []rune(s)
+
+	if start < 0 || end > len(runes) || start > end {
+		return s
+	}
+
+	return string(runes[:start]) + newSub + string(runes[end:])
+}
+
 func IsNumericScreamingSnakeCase(s string) bool {
 	re := regexp.MustCompile(`^[A-Z0-9]+(?:_[A-Z0-9]+)*$`)
 	return re.MatchString(s)

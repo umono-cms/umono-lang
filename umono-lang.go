@@ -25,17 +25,19 @@ func New(converter interfaces.Converter) *UmonoLang {
 
 func (ul *UmonoLang) Convert(raw string) string {
 
-	realContent := raw
-	localCompMap := map[string]interfaces.Component{}
+	content := raw
+	localCompMap := []interfaces.Component{}
 
 	firstCompDefIndex := ul.findFirstCompDefIndex(raw)
 
 	if firstCompDefIndex != -1 {
-		realContent = raw[:firstCompDefIndex]
+		content = raw[:firstCompDefIndex]
 		localCompMap = ul.readLocalComponents(raw[firstCompDefIndex:])
 	}
 
-	compMap := builtInCompMap()
+	comps := localCompMap
+
+	/*compMap := builtInCompMap()
 
 	for name, gc := range ul.globalCompMap {
 		compMap[name] = gc
@@ -43,25 +45,10 @@ func (ul *UmonoLang) Convert(raw string) string {
 
 	for name, lc := range localCompMap {
 		compMap[name] = lc
-	}
+	}*/
 
-	preConverted := ul.converter.Convert(ul.handleComps(realContent, compMap, 1))
-
-	return preConverted
-}
-
-func builtInCompMap() map[string]interfaces.Component {
-	bcm := map[string]interfaces.Component{}
-
-	builtInComps := []interfaces.Component{
-		&components.Link{},
-	}
-
-	for _, bc := range builtInComps {
-		bcm[bc.Name()] = bc
-	}
-
-	return bcm
+	cursor := 0
+	return ul.converter.Convert(ul.handleComps(comps, content, 1, cursor))
 }
 
 func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
@@ -91,6 +78,20 @@ func (ul *UmonoLang) RemoveGlobalComponent(name string) error {
 	return nil
 }
 
+func builtInCompMap() map[string]interfaces.Component {
+	bcm := map[string]interfaces.Component{}
+
+	builtInComps := []interfaces.Component{
+		&components.Link{},
+	}
+
+	for _, bc := range builtInComps {
+		bcm[bc.Name()] = bc
+	}
+
+	return bcm
+}
+
 func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
 
 	re := regexp.MustCompile(`\n~\s+[A-Z0-9]+(?:_[A-Z0-9]+)*\s*\n`)
@@ -104,11 +105,11 @@ func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
 	return -1
 }
 
-func (ul *UmonoLang) readLocalComponents(localeCompsRaw string) map[string]interfaces.Component {
+func (ul *UmonoLang) readLocalComponents(localeCompsRaw string) []interfaces.Component {
 
 	localeCompsIndexes := ustrings.IndexesByRegex(localeCompsRaw, `\n~\s+[A-Z0-9_]+(?:_[A-Z0-9]+)*\s*\n`)
 
-	compContentMap := map[string]interfaces.Component{}
+	comps := []interfaces.Component{}
 
 	re := regexp.MustCompile(`(?s)^~\s*|\s*\n$`)
 
@@ -135,34 +136,44 @@ func (ul *UmonoLang) readLocalComponents(localeCompsRaw string) map[string]inter
 		}
 
 		compName := re.ReplaceAllString(compNameRaw, "")
-		compContentMap[compName] = components.NewCustom(compName, strings.TrimSpace(compContentRaw))
+		comps = append(comps, components.NewCustom(compName, strings.TrimSpace(compContentRaw)))
 	}
 
-	return compContentMap
+	return comps
 }
 
 func (ul *UmonoLang) readBuiltInComponents(raw string) map[string]string {
 	return map[string]string{}
 }
 
-func (ul *UmonoLang) handleComps(content string, compMap map[string]interfaces.Component, deep int) string {
+func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, deep int, cursor int) string {
 
 	if deep == 20 {
 		return ""
 	}
 
-	comps := ustrings.FindAllString(content, `\s*[A-Z0-9_]+(?:_[A-Z0-9]+)*\s*`, `^\s*|\s*$`)
+	calls := readCalls(content, comps)
 
 	handled := content
 
-	for _, compName := range comps {
-		comp, ok := compMap[compName]
-		if !ok || comp.PutAfterConvert() {
+	for _, call := range calls {
+		if call.Component().NeedToConvert() {
 			continue
 		}
 
-		re := regexp.MustCompile(fmt.Sprintf(`%s`, compName))
-		handled = re.ReplaceAllString(handled, ul.handleComps(comp.RawContent(), compMap, deep+1))
+		handled = ustrings.ReplaceSubstring(handled, ul.handleComps(comps, call.Component().RawContent(), deep+1, cursor), call.Start()+cursor, call.End()+cursor)
+
+		abs := len(call.Component().RawContent()) - len(call.Component().Name())
+		if abs < 0 {
+			abs = -abs
+		}
+
+		if len(call.Component().Name()) < len(call.Component().RawContent()) {
+			cursor += abs
+		} else {
+			cursor -= abs
+		}
+
 	}
 
 	return strings.TrimSpace(handled)
