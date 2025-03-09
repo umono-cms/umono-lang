@@ -122,6 +122,140 @@ func (s *StringsTestSuite) TestFindAllString() {
 	}
 }
 
+func (s *StringsTestSuite) TestFindAllStringIndex() {
+	for _, scene := range []struct {
+		str    string
+		regex  string
+		result [][]int
+	}{
+		{
+			"UMONO",
+			"M",
+			[][]int{[]int{1, 2}},
+		},
+		{
+			"UMONO",
+			"O",
+			[][]int{
+				[]int{2, 3},
+				[]int{4, 5},
+			},
+		},
+		{
+			"UMONO",
+			"T",
+			[][]int{},
+		},
+		{
+			"HELLO_WORLD",
+			`WORLD`,
+			[][]int{[]int{6, 11}},
+		},
+		// UTF-8
+		{
+			"UMONO öçğüşiı UMONO",
+			`UMONO`,
+			[][]int{
+				[]int{0, 5},
+				[]int{14, 19},
+			},
+		},
+		{
+			"UMONO öçğüşiı UMONO",
+			`[öçğüşiı]+`,
+			[][]int{[]int{6, 13}},
+		},
+	} {
+		result := FindAllStringIndex(scene.str, scene.regex)
+		require.Equal(s.T(), scene.result, result)
+	}
+}
+
+func (s *StringsTestSuite) TestReplaceSubstring() {
+	for _, scene := range []struct {
+		str    string
+		newSub string
+		start  int
+		end    int
+		result string
+	}{
+		{
+			"U is a content management system",
+			"UMONO",
+			0,
+			1,
+			"UMONO is a content management system",
+		},
+		{
+			"HELLO WORLD 0",
+			"123",
+			12,
+			13,
+			"HELLO WORLD 123",
+		},
+		{
+			"HELLO WORLD 12345",
+			"12345",
+			12,
+			17,
+			"HELLO WORLD 12345",
+		},
+		{
+			"HELLO great WORLD",
+			"perfect",
+			6,
+			11,
+			"HELLO perfect WORLD",
+		},
+		{
+			"HELLO",
+			"no-matter",
+			-1,
+			5,
+			"HELLO",
+		},
+		{
+			"HELLO",
+			"no-matter",
+			0,
+			7,
+			"HELLO",
+		},
+		{
+			"HELLO",
+			"no-matter",
+			3,
+			2,
+			"HELLO",
+		},
+		// UTF-8
+		{
+			"öç öç öç öç şi şi",
+			"perfect",
+			6,
+			8,
+			"öç öç perfect öç şi şi",
+		},
+		{
+			"öç öç öç öç şi şi",
+			"perfect",
+			0,
+			2,
+			"perfect öç öç öç şi şi",
+		},
+		{
+			"öç öç öç öç şi şi",
+			"perfect",
+			15,
+			17,
+			"öç öç öç öç şi perfect",
+		},
+	} {
+		result := ReplaceSubstring(scene.str, scene.newSub, scene.start, scene.end)
+		require.Equal(s.T(), scene.result, result)
+	}
+}
+
 func (s *StringsTestSuite) TestIsNumericScreamingSnakeCase() {
 	for sI, scene := range []struct {
 		str    string

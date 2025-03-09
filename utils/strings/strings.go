@@ -63,7 +63,7 @@ func FindAllStringIndex(s string, regex string) [][]int {
 		return len([]rune(s[:byteIdx]))
 	}
 
-	var runeIndexes [][]int
+	runeIndexes := [][]int{}
 	for _, idx := range indexes {
 		runeIndexes = append(runeIndexes, []int{byteToRune(idx[0]), byteToRune(idx[1])})
 	}
