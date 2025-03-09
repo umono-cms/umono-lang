@@ -12,40 +12,32 @@ import (
 )
 
 type UmonoLang struct {
-	converter     interfaces.Converter
-	globalCompMap map[string]interfaces.Component
+	converter   interfaces.Converter
+	globalComps []interfaces.Component
 }
 
 func New(converter interfaces.Converter) *UmonoLang {
 	return &UmonoLang{
-		converter:     converter,
-		globalCompMap: make(map[string]interfaces.Component),
+		converter:   converter,
+		globalComps: []interfaces.Component{},
 	}
 }
 
 func (ul *UmonoLang) Convert(raw string) string {
 
 	content := raw
-	localCompMap := []interfaces.Component{}
+	localComps := []interfaces.Component{}
 
 	firstCompDefIndex := ul.findFirstCompDefIndex(raw)
 
 	if firstCompDefIndex != -1 {
 		content = raw[:firstCompDefIndex]
-		localCompMap = ul.readLocalComponents(raw[firstCompDefIndex:])
+		localComps = ul.readLocalComponents(raw[firstCompDefIndex:])
 	}
 
-	comps := localCompMap
-
-	/*compMap := builtInCompMap()
-
-	for name, gc := range ul.globalCompMap {
-		compMap[name] = gc
-	}
-
-	for name, lc := range localCompMap {
-		compMap[name] = lc
-	}*/
+	comps := builtInComps()
+	comps = overrideComps(comps, ul.globalComps)
+	comps = overrideComps(comps, localComps)
 
 	cursor := 0
 	return ul.converter.Convert(ul.handleComps(comps, content, 1, cursor))
@@ -57,7 +49,7 @@ func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
 		return errors.New("SYNTAX_ERROR: Component names have to be SCREAMING_SNAKE_CASE.")
 	}
 
-	ul.globalCompMap[name] = components.NewCustom(name, content)
+	ul.globalComps = overrideComps(ul.globalComps, []interfaces.Component{components.NewCustom(name, content)})
 
 	return nil
 }
@@ -68,28 +60,14 @@ func (ul *UmonoLang) RemoveGlobalComponent(name string) error {
 		return errors.New("SYNTAX_ERROR: Component names have to be SCREAMING_SNAKE_CASE.")
 	}
 
-	_, ok := ul.globalCompMap[name]
-	if !ok {
+	index, found := findCompByName(ul.globalComps, name)
+	if found == nil {
 		return fmt.Errorf("NOT_FOUND: The global component named '%s' not found.", name)
 	}
 
-	delete(ul.globalCompMap, name)
+	ul.globalComps = append(ul.globalComps[:index], ul.globalComps[index+1:]...)
 
 	return nil
-}
-
-func builtInCompMap() map[string]interfaces.Component {
-	bcm := map[string]interfaces.Component{}
-
-	builtInComps := []interfaces.Component{
-		&components.Link{},
-	}
-
-	for _, bc := range builtInComps {
-		bcm[bc.Name()] = bc
-	}
-
-	return bcm
 }
 
 func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
