@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/interfaces"
@@ -141,12 +142,15 @@ func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, d
 
 		handled = ustrings.ReplaceSubstring(handled, ul.handleComps(comps, call.Component().RawContent(), deep+1, cursor), call.Start()+cursor, call.End()+cursor)
 
-		abs := len(call.Component().RawContent()) - len(call.Component().Name())
+		rawContentLen := utf8.RuneCountInString(call.Component().RawContent())
+		nameLen := utf8.RuneCountInString(call.Component().Name())
+
+		abs := rawContentLen - nameLen
 		if abs < 0 {
 			abs = -abs
 		}
 
-		if len(call.Component().Name()) < len(call.Component().RawContent()) {
+		if nameLen < rawContentLen {
 			cursor += abs
 		} else {
 			cursor -= abs
