@@ -171,6 +171,50 @@ func (s *StringsTestSuite) TestFindAllStringIndex() {
 	}
 }
 
+func (s *StringsTestSuite) TestSeparateKeyValue() {
+	for i, scene := range []struct {
+		str   string
+		sep   string
+		ok    bool
+		key   string
+		value string
+	}{
+		{
+			`A # B`,
+			`\s*#\s*`,
+			true,
+			`A`,
+			`B`,
+		},
+		{
+			`A ö B`,
+			`\s*ö\s*`,
+			true,
+			`A`,
+			`B`,
+		},
+		{
+			`öçöç #### şişi`,
+			`\s*####\s*`,
+			true,
+			`öçöç`,
+			`şişi`,
+		},
+		{
+			`  A === B  `,
+			`\s*===\s*`,
+			true,
+			`A`,
+			`B`,
+		},
+	} {
+		ok, key, value := SeparateKeyValue(scene.str, scene.sep)
+		require.Equal(s.T(), scene.ok, ok, "index: "+strconv.Itoa(i))
+		require.Equal(s.T(), scene.key, key, "index: "+strconv.Itoa(i))
+		require.Equal(s.T(), scene.value, value, "index: "+strconv.Itoa(i))
+	}
+}
+
 func (s *StringsTestSuite) TestReplaceSubstring() {
 	for _, scene := range []struct {
 		str    string

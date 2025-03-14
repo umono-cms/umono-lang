@@ -41,7 +41,9 @@ func (ul *UmonoLang) Convert(raw string) string {
 	comps = overrideComps(comps, localComps)
 
 	cursor := 0
-	return ul.converter.Convert(ul.handleComps(comps, content, 1, cursor))
+	preConverted := ul.converter.Convert(ul.handleComps(comps, content, 1, cursor))
+
+	return ul.convert(comps, preConverted)
 }
 
 func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
@@ -159,4 +161,11 @@ func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, d
 	}
 
 	return strings.TrimSpace(handled)
+}
+
+func (ul *UmonoLang) convert(comps []interfaces.Component, handled string) string {
+
+	return handled
+
+	// TODO: Add built-in component converter here
 }

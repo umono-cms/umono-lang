@@ -33,14 +33,76 @@ func (c *Call) End() int {
 	return c.end
 }
 
+func (c *Call) fillArgsByRegex(content, regex, separator string) {
+
+	keyValue := make(map[string]string)
+	keyValuesRaw := ustrings.FindAllString(content, regex, "")
+
+	for _, rawKeyVal := range keyValuesRaw {
+		ok, key, value := ustrings.SeparateKeyValue(rawKeyVal, separator)
+		if !ok {
+			continue
+		}
+
+		keyValue[key] = value
+	}
+
+	for _, arg := range c.component.Arguments() {
+		val, ok := keyValue[arg.Name()]
+		if !ok {
+			arg.SetValue(arg.Default())
+			continue
+		}
+
+		if arg.Type() == "string" {
+			arg.SetValue(val)
+		} else if arg.Type() == "bool" {
+			if val == "false" {
+				arg.SetValue(false)
+			} else if val == "true" {
+				arg.SetValue(false)
+			}
+		}
+	}
+
+}
+
+type selector struct {
+	regex             string
+	paramRegex        string
+	keyValueSeparator string
+}
+
 func readCalls(content string, comps []interfaces.Component) []*Call {
+
+	selectors := []selector{
+		selector{
+			regex:             `\{\{\s*%s\s*([a-z0-9\-]+\s*=\s*.*)+\s*\}\}`,
+			paramRegex:        `([\w-]+)\s*=\s*"([^"]+)"|([\w-]+)\s*=\s*(true|false)`,
+			keyValueSeparator: `\s*=\s*`,
+		},
+		selector{
+			regex:      `\{\{\s*%s\s*\}\}`,
+			paramRegex: "",
+		},
+		selector{
+			regex:      `%s`,
+			paramRegex: "",
+		},
+	}
 
 	calls := []*Call{}
 
-	for _, comp := range comps {
-		indexes := ustrings.FindAllStringIndex(content, fmt.Sprintf(`%s`, comp.Name()))
-		for _, index := range indexes {
-			calls = append(calls, NewCall(comp, index[0], index[1]))
+	for _, slc := range selectors {
+		for _, comp := range comps {
+			indexes := ustrings.FindAllStringIndex(content, fmt.Sprintf(slc.regex, comp.Name()))
+			for _, index := range indexes {
+				call := NewCall(comp, index[0], index[1])
+				if slc.paramRegex != "" {
+					call.fillArgsByRegex(string([]rune(content)[call.start:call.end]), slc.paramRegex, slc.keyValueSeparator)
+				}
+				calls = append(calls, call)
+			}
 		}
 	}
 
