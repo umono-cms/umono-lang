@@ -173,15 +173,17 @@ func (s *StringsTestSuite) TestFindAllStringIndex() {
 
 func (s *StringsTestSuite) TestSeparateKeyValue() {
 	for i, scene := range []struct {
-		str   string
-		sep   string
-		ok    bool
-		key   string
-		value string
+		str       string
+		sep       string
+		trimRegex string
+		ok        bool
+		key       string
+		value     string
 	}{
 		{
 			`A # B`,
 			`\s*#\s*`,
+			`\s*`,
 			true,
 			`A`,
 			`B`,
@@ -189,6 +191,7 @@ func (s *StringsTestSuite) TestSeparateKeyValue() {
 		{
 			`A ö B`,
 			`\s*ö\s*`,
+			`\s*`,
 			true,
 			`A`,
 			`B`,
@@ -196,6 +199,7 @@ func (s *StringsTestSuite) TestSeparateKeyValue() {
 		{
 			`öçöç #### şişi`,
 			`\s*####\s*`,
+			`\s*`,
 			true,
 			`öçöç`,
 			`şişi`,
@@ -203,12 +207,13 @@ func (s *StringsTestSuite) TestSeparateKeyValue() {
 		{
 			`  A === B  `,
 			`\s*===\s*`,
+			`\s*`,
 			true,
 			`A`,
 			`B`,
 		},
 	} {
-		ok, key, value := SeparateKeyValue(scene.str, scene.sep)
+		ok, key, value := SeparateKeyValue(scene.str, scene.sep, scene.trimRegex)
 		require.Equal(s.T(), scene.ok, ok, "index: "+strconv.Itoa(i))
 		require.Equal(s.T(), scene.key, key, "index: "+strconv.Itoa(i))
 		require.Equal(s.T(), scene.value, value, "index: "+strconv.Itoa(i))

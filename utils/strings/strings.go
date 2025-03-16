@@ -71,7 +71,7 @@ func FindAllStringIndex(s string, regex string) [][]int {
 	return runeIndexes
 }
 
-func SeparateKeyValue(s, separator string) (bool, string, string) {
+func SeparateKeyValue(s, separator, trimRegex string) (bool, string, string) {
 
 	re := regexp.MustCompile(separator)
 	loc := re.FindStringIndex(s)
@@ -83,7 +83,9 @@ func SeparateKeyValue(s, separator string) (bool, string, string) {
 	mid := loc[0]
 	midEnd := loc[1]
 
-	return true, strings.TrimSpace(s[:mid]), strings.TrimSpace(s[midEnd:])
+	re2 := regexp.MustCompile(trimRegex)
+
+	return true, re2.ReplaceAllString(s[:mid], ""), re2.ReplaceAllString(s[midEnd:], "")
 }
 
 func ReplaceSubstring(s string, newSub string, start int, end int) string {

@@ -3,6 +3,7 @@ package converters
 import (
 	"bytes"
 
+	"github.com/umono-cms/umono-lang/interfaces"
 	"github.com/yuin/goldmark"
 )
 
@@ -23,4 +24,29 @@ func (*HTML) Convert(umonoLang string) string {
 	html := buf.String()
 
 	return html
+}
+
+func (h *HTML) ConvertBuiltInComp(call interfaces.Call) string {
+	if call.Component().Name() == "LINK" {
+		return h.renderLink(call)
+	}
+	return ""
+}
+
+func (*HTML) renderLink(call interfaces.Call) string {
+	text := call.ParameterByName("text")
+	url := call.ParameterByName("url")
+	newTab := call.ParameterByName("new-tab")
+
+	if text == nil || url == nil || newTab == nil {
+		// NOTE: Unexpected
+		return ""
+	}
+
+	newTabStr := ""
+	if newTab.Value().(bool) == true {
+		newTabStr = ` target="_blank" rel="noopener noreferrer"`
+	}
+
+	return "<a href=\"" + url.Value().(string) + "\"" + newTabStr + ">" + text.Value().(string) + "</a>"
 }

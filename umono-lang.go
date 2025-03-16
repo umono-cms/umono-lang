@@ -165,7 +165,35 @@ func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, d
 
 func (ul *UmonoLang) convert(comps []interfaces.Component, handled string) string {
 
-	return handled
+	converted := handled
 
-	// TODO: Add built-in component converter here
+	calls := readCalls(converted, comps)
+
+	cursor := 0
+
+	for _, call := range calls {
+		if !call.Component().NeedToConvert() {
+			continue
+		}
+
+		output := ul.converter.ConvertBuiltInComp(call)
+
+		converted = ustrings.ReplaceSubstring(converted, output, call.Start()+cursor, call.End()+cursor)
+
+		convertedLen := utf8.RuneCountInString(output)
+		callLen := call.End() - call.Start()
+
+		abs := convertedLen - callLen
+		if abs < 0 {
+			abs = -abs
+		}
+
+		if callLen < convertedLen {
+			cursor += abs
+		} else {
+			cursor -= abs
+		}
+	}
+
+	return converted
 }
