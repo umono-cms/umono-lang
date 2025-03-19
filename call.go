@@ -130,6 +130,7 @@ func readCalls(content string, comps []interfaces.Component) []*Call {
 						call.fillArgsByRegex(string([]rune(content)[call.start:call.end]), slc.paramRegex, slc.keyValueSeparator, slc.keyValueTrimRegex)
 					}
 					calls = append(calls, call)
+					calledIndex = append(calledIndex, [2]int{index[0], index[1]})
 				}
 			}
 		}
@@ -139,7 +140,6 @@ func readCalls(content string, comps []interfaces.Component) []*Call {
 }
 
 func alreadyRead(indexes [][2]int, start, end int) bool {
-	return false
 	for _, index := range indexes {
 		if (start >= index[0] && start <= index[1]) || (end >= index[0] && end <= index[1]) {
 			return true

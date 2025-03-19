@@ -123,10 +123,6 @@ func (ul *UmonoLang) readLocalComponents(localeCompsRaw string) []interfaces.Com
 	return comps
 }
 
-func (ul *UmonoLang) readBuiltInComponents(raw string) map[string]string {
-	return map[string]string{}
-}
-
 func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, deep int, cursor int) string {
 
 	if deep == 20 {
@@ -145,14 +141,14 @@ func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, d
 		handled = ustrings.ReplaceSubstring(handled, ul.handleComps(comps, call.Component().RawContent(), deep+1, cursor), call.Start()+cursor, call.End()+cursor)
 
 		rawContentLen := utf8.RuneCountInString(call.Component().RawContent())
-		nameLen := utf8.RuneCountInString(call.Component().Name())
+		callLen := call.End() - call.Start()
 
-		abs := rawContentLen - nameLen
+		abs := rawContentLen - callLen
 		if abs < 0 {
 			abs = -abs
 		}
 
-		if nameLen < rawContentLen {
+		if callLen < rawContentLen {
 			cursor += abs
 		} else {
 			cursor -= abs
