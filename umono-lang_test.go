@@ -42,10 +42,12 @@ func (s *UmonoLangTestSuite) TestConvert() {
 
 func (s *UmonoLangTestSuite) TestSetGlobalComponentOK() {
 	s.umonoLang.SetGlobalComponent("HELLO_WORLD", "hello!")
-	hello, ok := s.umonoLang.globalCompMap["HELLO_WORLD"]
 
-	require.True(s.T(), ok)
-	require.Equal(s.T(), "hello!", hello)
+	require.Equal(s.T(), int(1), len(s.umonoLang.globalComps))
+
+	hello := s.umonoLang.globalComps[0]
+
+	require.Equal(s.T(), "hello!", hello.RawContent())
 }
 
 func (s *UmonoLangTestSuite) TestSetGlobalComponentSyntaxError() {
@@ -55,12 +57,12 @@ func (s *UmonoLangTestSuite) TestSetGlobalComponentSyntaxError() {
 }
 
 func (s *UmonoLangTestSuite) TestRemoveGlobalComponentOK() {
-	s.umonoLang.globalCompMap["HELLO_WORLD"] = "hello!"
+	s.umonoLang.SetGlobalComponent("HELLO_WORLD", "hello!")
 	err := s.umonoLang.RemoveGlobalComponent("HELLO_WORLD")
 	require.Nil(s.T(), err)
 
-	_, ok := s.umonoLang.globalCompMap["HELLO_WORLD"]
-	require.False(s.T(), ok)
+	_, found := findCompByName(s.umonoLang.globalComps, "HELLO_WORLD")
+	require.Nil(s.T(), found)
 }
 
 func (s *UmonoLangTestSuite) TestRemoveGlobalComponentSyntaxError() {
