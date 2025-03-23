@@ -29,6 +29,8 @@ func (*HTML) Convert(umonoLang string) string {
 func (h *HTML) ConvertBuiltInComp(call interfaces.Call) string {
 	if call.Component().Name() == "LINK" {
 		return h.renderLink(call)
+	} else if call.Component().Name() == "404" {
+		return h.render404()
 	}
 	return ""
 }
@@ -49,4 +51,8 @@ func (*HTML) renderLink(call interfaces.Call) string {
 	}
 
 	return "<a href=\"" + url.Value().(string) + "\"" + newTabStr + ">" + text.Value().(string) + "</a>"
+}
+
+func (*HTML) render404() string {
+	return "<h1>404 Not Found</h1>Page not found"
 }

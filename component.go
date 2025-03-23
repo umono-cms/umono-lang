@@ -10,6 +10,7 @@ func builtInComps() []interfaces.Component {
 
 	builtInComps := []interfaces.Component{
 		&components.Link{},
+		&components.S404{},
 	}
 
 	for _, bc := range builtInComps {
