@@ -5,12 +5,21 @@ import "github.com/umono-cms/umono-lang/interfaces"
 type Custom struct {
 	name       string
 	rawContent string
+	args       []interfaces.Argument
 }
 
 func NewCustom(name, rawContent string) interfaces.Component {
 	return &Custom{
 		name:       name,
 		rawContent: rawContent,
+	}
+}
+
+func NewCustomWithArgs(name, rawContent string, args []interfaces.Argument) interfaces.Component {
+	return &Custom{
+		name:       name,
+		rawContent: rawContent,
+		args:       args,
 	}
 }
 

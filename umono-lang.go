@@ -33,7 +33,7 @@ func (ul *UmonoLang) Convert(raw string) string {
 
 	if firstCompDefIndex != -1 {
 		content = raw[:firstCompDefIndex]
-		localComps = ul.readLocalComponents(raw[firstCompDefIndex:])
+		localComps = readLocalComps(raw[firstCompDefIndex:])
 	}
 
 	comps := builtInComps()
@@ -84,43 +84,6 @@ func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
 	}
 
 	return -1
-}
-
-func (ul *UmonoLang) readLocalComponents(localeCompsRaw string) []interfaces.Component {
-
-	localeCompsIndexes := ustrings.IndexesByRegex(localeCompsRaw, `\n~\s+[A-Z0-9_]+(?:_[A-Z0-9]+)*\s*\n`)
-
-	comps := []interfaces.Component{}
-
-	re := regexp.MustCompile(`(?s)^~\s*|\s*\n$`)
-
-	for i := 0; i < len(localeCompsIndexes); i++ {
-		var compRaw string
-		if i == len(localeCompsIndexes)-1 {
-			compRaw = localeCompsRaw[localeCompsIndexes[i]:]
-		} else {
-			compRaw = localeCompsRaw[localeCompsIndexes[i]:localeCompsIndexes[i+1]]
-		}
-
-		trimmed := strings.TrimSpace(compRaw)
-		endOfCompName := strings.Index(trimmed, "\n")
-
-		var compNameRaw string
-		var compContentRaw string
-
-		if endOfCompName == -1 {
-			compNameRaw = trimmed
-			compContentRaw = ""
-		} else {
-			compNameRaw = trimmed[0:endOfCompName]
-			compContentRaw = trimmed[endOfCompName:]
-		}
-
-		compName := re.ReplaceAllString(compNameRaw, "")
-		comps = append(comps, components.NewCustom(compName, strings.TrimSpace(compContentRaw)))
-	}
-
-	return comps
 }
 
 func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, deep int, cursor int) string {
