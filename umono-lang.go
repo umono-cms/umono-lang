@@ -101,9 +101,15 @@ func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, d
 			continue
 		}
 
-		handled = ustrings.ReplaceSubstring(handled, ul.handleComps(comps, call.Component().RawContent(), deep+1, cursor), call.Start()+cursor, call.End()+cursor)
+		handledRawContent := call.Component().RawContent()
 
-		rawContentLen := utf8.RuneCountInString(call.Component().RawContent())
+		for _, prm := range call.Parameters() {
+			handledRawContent = strings.ReplaceAll(handledRawContent, "$"+prm.Name(), prm.Value().(string))
+		}
+
+		handled = ustrings.ReplaceSubstring(handled, ul.handleComps(comps, handledRawContent, deep+1, cursor), call.Start()+cursor, call.End()+cursor)
+
+		rawContentLen := utf8.RuneCountInString(handledRawContent)
 		callLen := call.End() - call.Start()
 
 		abs := rawContentLen - callLen

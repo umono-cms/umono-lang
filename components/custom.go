@@ -28,7 +28,7 @@ func (c *Custom) Name() string {
 }
 
 func (c *Custom) Arguments() []interfaces.Argument {
-	return []interfaces.Argument{}
+	return c.args
 }
 
 func (c *Custom) RawContent() string {

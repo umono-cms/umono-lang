@@ -79,7 +79,7 @@ func readComp(compName, raw string) interfaces.Component {
 	args := []interfaces.Argument{}
 
 	for _, keyValueRaw := range argsKeyValueRaw {
-		ok, key, value := ustrings.SeparateKeyValue(keyValueRaw, `\s*=\s*`, `[\n\t\r\s]+`)
+		ok, key, value := ustrings.SeparateKeyValue(keyValueRaw, `\s*=\s*`, `\s*"\s*|\s*"\s*`)
 		if !ok {
 			continue
 		}
@@ -90,7 +90,7 @@ func readComp(compName, raw string) interfaces.Component {
 
 	rawContent := getRawContent(raw)
 
-	return components.NewCustomWithArgs(name, rawContent, args)
+	return components.NewCustomWithArgs(name, strings.TrimSpace(rawContent), args)
 }
 
 func getCompName(raw string) string {
@@ -113,7 +113,7 @@ func getRawContent(raw string) string {
 
 	last := indexes[len(indexes)-1]
 
-	return raw[last[1]:]
+	return string([]rune(raw)[last[1]:])
 }
 
 func detectArgType(value string) string {
