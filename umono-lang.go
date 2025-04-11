@@ -7,7 +7,6 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/interfaces"
 	ustrings "github.com/umono-cms/umono-lang/utils/strings"
 )
@@ -52,7 +51,7 @@ func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
 		return errors.New("SYNTAX_ERROR: Component names have to be SCREAMING_SNAKE_CASE.")
 	}
 
-	ul.globalComps = overrideComps(ul.globalComps, []interfaces.Component{components.NewCustom(name, content)})
+	ul.globalComps = overrideComps(ul.globalComps, []interfaces.Component{readComp(name, content)})
 
 	return nil
 }
