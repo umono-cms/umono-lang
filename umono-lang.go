@@ -7,7 +7,6 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/interfaces"
 	ustrings "github.com/umono-cms/umono-lang/utils/strings"
 )
@@ -33,7 +32,7 @@ func (ul *UmonoLang) Convert(raw string) string {
 
 	if firstCompDefIndex != -1 {
 		content = raw[:firstCompDefIndex]
-		localComps = ul.readLocalComponents(raw[firstCompDefIndex:])
+		localComps = readLocalComps(raw[firstCompDefIndex:])
 	}
 
 	comps := builtInComps()
@@ -52,7 +51,7 @@ func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
 		return errors.New("SYNTAX_ERROR: Component names have to be SCREAMING_SNAKE_CASE.")
 	}
 
-	ul.globalComps = overrideComps(ul.globalComps, []interfaces.Component{components.NewCustom(name, content)})
+	ul.globalComps = overrideComps(ul.globalComps, []interfaces.Component{readComp(name, content)})
 
 	return nil
 }
@@ -86,43 +85,6 @@ func (ul *UmonoLang) findFirstCompDefIndex(raw string) int {
 	return -1
 }
 
-func (ul *UmonoLang) readLocalComponents(localeCompsRaw string) []interfaces.Component {
-
-	localeCompsIndexes := ustrings.IndexesByRegex(localeCompsRaw, `\n~\s+[A-Z0-9_]+(?:_[A-Z0-9]+)*\s*\n`)
-
-	comps := []interfaces.Component{}
-
-	re := regexp.MustCompile(`(?s)^~\s*|\s*\n$`)
-
-	for i := 0; i < len(localeCompsIndexes); i++ {
-		var compRaw string
-		if i == len(localeCompsIndexes)-1 {
-			compRaw = localeCompsRaw[localeCompsIndexes[i]:]
-		} else {
-			compRaw = localeCompsRaw[localeCompsIndexes[i]:localeCompsIndexes[i+1]]
-		}
-
-		trimmed := strings.TrimSpace(compRaw)
-		endOfCompName := strings.Index(trimmed, "\n")
-
-		var compNameRaw string
-		var compContentRaw string
-
-		if endOfCompName == -1 {
-			compNameRaw = trimmed
-			compContentRaw = ""
-		} else {
-			compNameRaw = trimmed[0:endOfCompName]
-			compContentRaw = trimmed[endOfCompName:]
-		}
-
-		compName := re.ReplaceAllString(compNameRaw, "")
-		comps = append(comps, components.NewCustom(compName, strings.TrimSpace(compContentRaw)))
-	}
-
-	return comps
-}
-
 func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, deep int, cursor int) string {
 
 	if deep == 20 {
@@ -138,9 +100,15 @@ func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, d
 			continue
 		}
 
-		handled = ustrings.ReplaceSubstring(handled, ul.handleComps(comps, call.Component().RawContent(), deep+1, cursor), call.Start()+cursor, call.End()+cursor)
+		handledRawContent := call.Component().RawContent()
 
-		rawContentLen := utf8.RuneCountInString(call.Component().RawContent())
+		for _, prm := range call.Parameters() {
+			handledRawContent = strings.ReplaceAll(handledRawContent, "$"+prm.Name(), prm.Value().(string))
+		}
+
+		handled = ustrings.ReplaceSubstring(handled, ul.handleComps(comps, handledRawContent, deep+1, cursor), call.Start()+cursor, call.End()+cursor)
+
+		rawContentLen := utf8.RuneCountInString(handledRawContent)
 		callLen := call.End() - call.Start()
 
 		abs := rawContentLen - callLen
