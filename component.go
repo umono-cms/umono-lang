@@ -107,7 +107,7 @@ func getRawContent(raw string) string {
 	if len(indexes) == 0 {
 		indexes = ustrings.FindAllStringIndex(raw, `~\s+[A-Z0-9_]+(?:_[A-Z0-9]+)*\s*`)
 		if len(indexes) == 0 {
-			return ""
+			return raw
 		}
 	}
 
