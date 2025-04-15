@@ -45,6 +45,32 @@ func (ul *UmonoLang) Convert(raw string) string {
 	return ul.convert(comps, preConverted)
 }
 
+func (ul *UmonoLang) ConvertGlobalComp(compName, raw string) string {
+
+	content := raw
+	localComps := []interfaces.Component{}
+
+	firstCompDefIndex := ul.findFirstCompDefIndex(raw)
+
+	if firstCompDefIndex != -1 {
+		content = raw[:firstCompDefIndex]
+		localComps = readLocalComps(raw[firstCompDefIndex:])
+	}
+
+	comps := builtInComps()
+	comps = overrideComps(comps, ul.globalComps)
+
+	globalComp := readComp(compName, content)
+	comps = overrideComps(comps, []interfaces.Component{globalComp})
+
+	comps = overrideComps(comps, localComps)
+
+	cursor := 0
+	preConverted := ul.converter.Convert(ul.handleComps(comps, "{{ "+compName+" }}", 1, cursor))
+
+	return ul.convert(comps, preConverted)
+}
+
 func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
 
 	if !ustrings.IsNumericScreamingSnakeCase(name) {
