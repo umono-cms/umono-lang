@@ -71,6 +71,15 @@ func (ul *UmonoLang) ConvertGlobalComp(compName, raw string) string {
 	return ul.convert(comps, preConverted)
 }
 
+func (ul *UmonoLang) GetGlobalComponent(name string) interfaces.Component {
+	for _, gc := range ul.globalComps {
+		if gc.Name() == name {
+			return gc
+		}
+	}
+	return nil
+}
+
 func (ul *UmonoLang) SetGlobalComponent(name, content string) error {
 
 	if !ustrings.IsNumericScreamingSnakeCase(name) {
