@@ -175,6 +175,13 @@ func (ul *UmonoLang) convert(comps []interfaces.Component, handled string) strin
 			continue
 		}
 
+		for _, prm := range call.Parameters() {
+			if prm.Type() == "string" {
+				cursor := 0
+				prm.SetValue(ul.converter.Convert(ul.handleComps(comps, prm.ValueAsString(), 1, cursor)))
+			}
+		}
+
 		output := ul.converter.ConvertBuiltInComp(call)
 
 		converted = ustrings.ReplaceSubstring(converted, output, call.Start()+cursor, call.End()+cursor)
