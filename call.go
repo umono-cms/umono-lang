@@ -64,12 +64,12 @@ func (c *Call) fillArgsByRegex(content, regex, separator, trimRegex string) {
 	for _, arg := range c.component.Arguments() {
 		val, ok := keyValue[arg.Name()]
 		if !ok {
-			c.params = append(c.params, NewParam(arg.Name(), arg.Default()))
+			c.params = append(c.params, NewParam(arg.Name(), arg.Type(), arg.Default()))
 			continue
 		}
 
 		if arg.Type() == "string" {
-			c.params = append(c.params, NewParam(arg.Name(), val))
+			c.params = append(c.params, NewParam(arg.Name(), arg.Type(), val))
 			continue
 		} else if arg.Type() == "bool" {
 			valBool := true
@@ -78,7 +78,7 @@ func (c *Call) fillArgsByRegex(content, regex, separator, trimRegex string) {
 			} else if val != "true" {
 				valBool = arg.Default().(bool)
 			}
-			c.params = append(c.params, NewParam(arg.Name(), valBool))
+			c.params = append(c.params, NewParam(arg.Name(), arg.Type(), valBool))
 			continue
 		}
 	}
@@ -90,7 +90,6 @@ type selector struct {
 	paramRegex        string
 	keyValueSeparator string
 	keyValueTrimRegex string
-	forBuiltIn        bool
 }
 
 func readCalls(content string, comps []interfaces.Component) []*Call {
@@ -100,25 +99,34 @@ func readCalls(content string, comps []interfaces.Component) []*Call {
 
 	selectors := []selector{
 		selector{
-			regex:             `\{\{\s*%s\s*([a-z0-9\-]+\s*=\s*.*)+\s*\}\}`,
+			regex:             `\{\{\s*%s(?:\s+(?:[\w-]+\s*=\s*&quot;[^&]+&quot;|[\w-]+\s*=\s*(?:true|false)))*\s*\}\}`,
 			paramRegex:        `([\w-]+)\s*=\s*&quot;([^&]+)&quot;|([\w-]+)\s*=\s*(true|false)`,
 			keyValueSeparator: `\s*=\s*`,
 			keyValueTrimRegex: `\s*&quot;\s*`,
-			forBuiltIn:        true,
 		},
 		selector{
-			regex:             `\{\{\s*%s\s*([a-z0-9\-]+\s*=\s*.*)+\s*\}\}`,
+			regex:             `\{\{\s*%s(?:\s+(?:[\w-]+\s*=\s*&apos;[^&]+&apos;|[\w-]+\s*=\s*(?:true|false)))*\s*\}\}`,
+			paramRegex:        `([\w-]+)\s*=\s*&apos;([^&]+)&apos;|([\w-]+)\s*=\s*(true|false)`,
+			keyValueSeparator: `\s*=\s*`,
+			keyValueTrimRegex: `\s*&apos;\s*`,
+		},
+		selector{
+			regex:             `\{\{\s*%s(?:\s+(?:[\w-]+\s*=\s*"[^"]*"|[\w-]+\s*=\s*(?:true|false)))*\s*\}\}`,
 			paramRegex:        `([\w-]+)\s*=\s*"([^"]+)"|([\w-]+)\s*=\s*(true|false)`,
 			keyValueSeparator: `\s*=\s*`,
 			keyValueTrimRegex: `\s*"\s*|\s*"\s*`,
 		},
 		selector{
-			regex:      `\{\{\s*%s\s*\}\}`,
-			paramRegex: "",
+			regex:             `\{\{\s*%s(?:\s+(?:[\w-]+\s*=\s*'[^']*'|[\w-]+\s*=\s*(?:true|false)))*\s*\}\}`,
+			paramRegex:        `([\w-]+)\s*=\s*'([^']+)'|([\w-]+)\s*=\s*(true|false)`,
+			keyValueSeparator: `\s*=\s*`,
+			keyValueTrimRegex: `\s*'\s*|\s*'\s*`,
 		},
 		selector{
-			regex:      `%s`,
-			paramRegex: "",
+			regex: `\{\{\s*%s\s*\}\}`,
+		},
+		selector{
+			regex: `%s`,
 		},
 	}
 
@@ -126,9 +134,6 @@ func readCalls(content string, comps []interfaces.Component) []*Call {
 
 	for _, slc := range selectors {
 		for _, comp := range comps {
-			if !comp.NeedToConvert() && slc.forBuiltIn {
-				continue
-			}
 			indexes := ustrings.FindAllStringIndex(content, fmt.Sprintf(slc.regex, comp.Name()))
 			for _, index := range indexes {
 				if !alreadyRead(calledIndex, index[0], index[1]) {
