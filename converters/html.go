@@ -2,6 +2,9 @@ package converters
 
 import (
 	"bytes"
+	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/umono-cms/umono-lang/interfaces"
 	"github.com/yuin/goldmark"
@@ -35,7 +38,7 @@ func (h *HTML) ConvertBuiltInComp(call interfaces.Call) string {
 	return ""
 }
 
-func (*HTML) renderLink(call interfaces.Call) string {
+func (h *HTML) renderLink(call interfaces.Call) string {
 	text := call.ParameterByName("text")
 	url := call.ParameterByName("url")
 	newTab := call.ParameterByName("new-tab")
@@ -50,9 +53,30 @@ func (*HTML) renderLink(call interfaces.Call) string {
 		newTabStr = ` target="_blank" rel="noopener noreferrer"`
 	}
 
-	return "<a href=\"" + url.Value().(string) + "\"" + newTabStr + ">" + text.Value().(string) + "</a>"
+	return "<a href=\"" + h.convertAsInline(url.Value().(string)) + "\"" + newTabStr + ">" + h.convertAsInline(text.Value().(string)) + "</a>"
 }
 
 func (*HTML) render404() string {
 	return "<h1>404 Not Found</h1>Page not found"
+}
+
+func (h *HTML) convertAsInline(content string) string {
+
+	blocker := "blocker-to-prevent-block-elements"
+
+	raw := blocker + content + blocker
+
+	html := h.Convert(raw)
+
+	pattern := fmt.Sprintf(`(?i)^<p>\s*%s\s*|\s*%s\s*</p>\s*$`, blocker, blocker)
+
+	re := regexp.MustCompile(pattern)
+
+	output := re.ReplaceAllString(html, "")
+
+	if strings.Contains(output, "<!-- raw HTML omitted -->") {
+		return content
+	}
+
+	return output
 }

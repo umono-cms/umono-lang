@@ -178,7 +178,7 @@ func (ul *UmonoLang) convert(comps []interfaces.Component, handled string) strin
 		for _, prm := range call.Parameters() {
 			if prm.Type() == "string" {
 				cursor := 0
-				prm.SetValue(ul.converter.Convert(ul.handleComps(comps, prm.ValueAsString(), 1, cursor)))
+				prm.SetValue(ul.handleComps(comps, prm.ValueAsString(), 1, cursor))
 			}
 		}
 
