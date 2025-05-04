@@ -47,6 +47,10 @@ func (ul *UmonoLang) Convert(raw string) string {
 
 func (ul *UmonoLang) ConvertGlobalComp(compName, raw string) string {
 
+	if compName == "" {
+		return ul.Convert(raw)
+	}
+
 	content := raw
 	localComps := []interfaces.Component{}
 
