@@ -1,0 +1,11 @@
+A
+
+~ A
+{{ B content = "C" }}
+
+~ B
+content = ""
+$content
+
+~ C
+cc

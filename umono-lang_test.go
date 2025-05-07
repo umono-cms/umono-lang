@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/umono-cms/umono-lang/utils/mocks"
@@ -23,20 +24,70 @@ func (s *UmonoLangTestSuite) TestConvert() {
 	inputFileReader := test.NewFileReader("test_assets/main/inputs", "ul")
 	outputFileReader := test.NewFileReader("test_assets/main/outputs", "mock")
 
-	inputDirReader := test.NewDirectoryReader("test_assets/main/inputs")
-	inputs, err := inputDirReader.ReadWithoutExt()
-
-	require.Nil(s.T(), err)
-
-	for _, input := range inputs {
-
-		inputCont, err := inputFileReader.Read(input, false)
+	for _, scene := range []struct {
+		file      string
+		converter func(string) string
+	}{
+		{"000_empty", mocks.BasicConverter},
+		{"001", mocks.BasicConverter},
+		{"002", mocks.BasicConverter},
+		{"003", mocks.BasicConverter},
+		{"004", mocks.BasicConverter},
+		{"005", mocks.BasicConverter},
+		{"006", mocks.BasicConverter},
+		{"007", mocks.BasicConverter},
+		{"008", mocks.BasicConverter},
+		{"009", mocks.BasicConverter},
+		{"010", mocks.BasicConverter},
+		{"011", func(ul string) string {
+			return strings.ToUpper(ul)
+		}},
+		{"012", func(ul string) string {
+			return strings.ToLower(ul)
+		}},
+		{"013", func(ul string) string {
+			return strings.ReplaceAll(ul, "xyz", "abc")
+		}},
+		{"014", func(ul string) string {
+			return strings.ReplaceAll(ul, "u", "a")
+		}},
+		{"015", func(ul string) string {
+			return strings.ToUpper(ul)
+		}},
+		{"016", func(ul string) string {
+			return strings.ToUpper(ul)
+		}},
+		{"017", func(ul string) string {
+			return strings.ReplaceAll(ul, "-", "#")
+		}},
+		{"018", func(ul string) string {
+			return ul
+		}},
+		{"019", func(ul string) string {
+			return strings.ToUpper(ul)
+		}},
+		{"020", func(ul string) string {
+			return strings.ToUpper(ul)
+		}},
+		{"021", func(ul string) string {
+			return strings.ToLower(ul)
+		}},
+		{"022", func(ul string) string {
+			return ul
+		}},
+		{"023", func(ul string) string {
+			return ul
+		}},
+	} {
+		inputCont, err := inputFileReader.Read(scene.file, false)
 		require.Nil(s.T(), err)
 
-		outputCont, err := outputFileReader.Read(input, true)
+		outputCont, err := outputFileReader.Read(scene.file, true)
 		require.Nil(s.T(), err)
 
-		require.Equal(s.T(), outputCont, s.umonoLang.Convert(inputCont), "input file name: "+input+".ul")
+		ul := New(mocks.NewMockConverter(scene.converter))
+
+		assert.Equal(s.T(), outputCont, ul.Convert(inputCont), "input file name: "+scene.file+".ul")
 	}
 }
 

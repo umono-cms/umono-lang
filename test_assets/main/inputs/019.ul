@@ -1,0 +1,5 @@
+{{ COMP a = "b" }}
+
+~ COMP
+a = "" c = "default-value"
+$c $a

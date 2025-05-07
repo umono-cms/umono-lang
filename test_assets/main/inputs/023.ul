@@ -1,0 +1,11 @@
+{{ A param = "B C" }}
+
+~ A
+param = ""
+$param
+
+~ B
+b
+
+~ C
+c
