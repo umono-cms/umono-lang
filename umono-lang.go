@@ -145,22 +145,11 @@ func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, d
 			handledRawContent = strings.ReplaceAll(handledRawContent, "$"+prm.Name(), prm.Value().(string))
 		}
 
-		handled = ustrings.ReplaceSubstring(handled, ul.handleComps(comps, handledRawContent, deep+1, cursor), call.Start()+cursor, call.End()+cursor)
+		subHandled := ul.handleComps(comps, handledRawContent, deep+1, cursor)
+		handled = ustrings.ReplaceSubstring(handled, subHandled, call.Start()+cursor, call.End()+cursor)
 
-		rawContentLen := utf8.RuneCountInString(handledRawContent)
-		callLen := call.End() - call.Start()
-
-		abs := rawContentLen - callLen
-		if abs < 0 {
-			abs = -abs
-		}
-
-		if callLen < rawContentLen {
-			cursor += abs
-		} else {
-			cursor -= abs
-		}
-
+		diff := utf8.RuneCountInString(subHandled) - (call.End() - call.Start())
+		cursor += diff
 	}
 
 	return strings.TrimSpace(handled)
