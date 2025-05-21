@@ -102,3 +102,14 @@ func IsNumericScreamingSnakeCase(s string) bool {
 	re := regexp.MustCompile(`^[A-Z0-9]+(?:_[A-Z0-9]+)*$`)
 	return re.MatchString(s)
 }
+
+func LastRuneIndex(s string) int {
+	if s == "" {
+		return -1
+	}
+	i := 0
+	for j := range s {
+		i = j
+	}
+	return i
+}
