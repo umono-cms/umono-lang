@@ -3,7 +3,6 @@ package umonolang
 import (
 	"strings"
 
-	"github.com/umono-cms/umono-lang/arguments"
 	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/interfaces"
 	ustrings "github.com/umono-cms/umono-lang/utils/strings"
@@ -72,25 +71,13 @@ func readComp(compName, raw string) interfaces.Component {
 	name := compName
 	if compName == "" {
 		name = getCompName(raw)
+		raw = getRawWithoutCompName(raw)
 	}
 
-	argsKeyValueRaw := ustrings.FindAllString(raw, `([\w-]+)\s*=\s*"([^"]*)"|([\w-]+)\s*=\s*(true|false)`, "")
+	keyValueIndexes := ustrings.FindAllStringIndex(raw, `([\w-]+)\s*=\s*`)
+	args := readArgs(raw, keyValueIndexes)
 
-	args := []interfaces.Argument{}
-
-	for _, keyValueRaw := range argsKeyValueRaw {
-		ok, key, value := ustrings.SeparateKeyValue(keyValueRaw, `\s*=\s*`, `\s*"\s*|\s*"\s*`)
-		if !ok {
-			continue
-		}
-
-		typ := detectArgType(value)
-		args = append(args, arguments.NewDynamicArg(key, typ, value))
-	}
-
-	rawContent := getRawContent(raw)
-
-	return components.NewCustomWithArgs(name, strings.TrimSpace(rawContent), args)
+	return components.NewCustomWithArgs(name, getContentBody(raw), args)
 }
 
 func getCompName(raw string) string {
@@ -101,24 +88,30 @@ func getCompName(raw string) string {
 	return names[0]
 }
 
-func getRawContent(raw string) string {
-
-	indexes := ustrings.FindAllStringIndex(raw, `([\w-]+)\s*=\s*"([^"]*)"|([\w-]+)\s*=\s*(true|false)`)
+func getRawWithoutCompName(raw string) string {
+	indexes := ustrings.FindAllStringIndex(raw, `~\s+[A-Z0-9_]+(?:_[A-Z0-9]+)*\s*`)
 	if len(indexes) == 0 {
-		indexes = ustrings.FindAllStringIndex(raw, `~\s+[A-Z0-9_]+(?:_[A-Z0-9]+)*\s*`)
-		if len(indexes) == 0 {
-			return raw
-		}
+		return raw
+	}
+
+	return raw[indexes[0][1]:]
+}
+
+func getContentBody(raw string) string {
+
+	indexes := ustrings.FindAllStringIndex(raw, `([\w-]+)\s*=\s*`)
+
+	if len(indexes) == 0 {
+		return strings.TrimSpace(raw)
 	}
 
 	last := indexes[len(indexes)-1]
 
-	return string([]rune(raw)[last[1]:])
-}
+	newLineIndex := strings.Index(raw[last[1]:], "\n")
 
-func detectArgType(value string) string {
-	if value == "true" || value == "false" {
-		return "bool"
+	if newLineIndex == -1 {
+		return strings.TrimSpace(raw)
 	}
-	return "string"
+
+	return strings.TrimSpace(string(raw[last[1]+newLineIndex+1:]))
 }
