@@ -1,0 +1,8 @@
+{{ HELLO name = "USER" }}
+
+~ USER
+Yunus Emre
+
+~ HELLO
+name = ""
+# $name

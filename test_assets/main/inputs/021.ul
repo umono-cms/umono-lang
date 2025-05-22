@@ -1,0 +1,5 @@
+{{ XYZ param = 12345 }}
+
+~ XYZ
+param = "DEFAULT"
+$param

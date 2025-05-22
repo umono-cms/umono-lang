@@ -1,0 +1,10 @@
+{{ COMP_1 content = "XYZ" }}
+
+XYZ
+
+~ COMP_1
+content = ""
+$content
+
+~ XYZ
+uuuuuuuuuuuuuuuu

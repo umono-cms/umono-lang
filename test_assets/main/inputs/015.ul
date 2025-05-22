@@ -1,0 +1,8 @@
+XYZ
+
+~ XYZ
+content = "ABC"
+### $content
+
+~ ABC
+as a default

@@ -1,0 +1,5 @@
+{{ HELLO name = "input" }}
+
+~ HELLO
+name = ""
+**$name**
