@@ -47,80 +47,43 @@ func (c *Call) ParameterByName(name string) interfaces.Parameter {
 	return nil
 }
 
-func (c *Call) fillArgsByRegex(content, regex, separator, trimRegex string) {
+func (c *Call) fillArgsByRegex(content, regex string) {
 
-	keyValue := make(map[string]string)
-	keyValuesRaw := ustrings.FindAllString(content, regex, "")
+	keyValueIndexes := ustrings.FindAllStringIndex(content, regex)
+	args := readArgs(content, keyValueIndexes)
 
-	for _, rawKeyVal := range keyValuesRaw {
-		ok, key, value := ustrings.SeparateKeyValue(rawKeyVal, separator, trimRegex)
-		if !ok {
-			continue
-		}
-
-		keyValue[key] = value
-	}
-
-	for _, arg := range c.component.Arguments() {
-		val, ok := keyValue[arg.Name()]
-		if !ok {
-			c.params = append(c.params, NewParam(arg.Name(), arg.Type(), arg.Default()))
-			continue
-		}
-
-		if arg.Type() == "string" {
-			c.params = append(c.params, NewParam(arg.Name(), arg.Type(), val))
-			continue
-		} else if arg.Type() == "bool" {
-			valBool := true
-			if val == "false" {
-				valBool = false
-			} else if val != "true" {
-				valBool = arg.Default().(bool)
+	for _, compArg := range c.component.Arguments() {
+		for _, arg := range args {
+			if compArg.Name() == arg.Name() && compArg.Type() == arg.Type() {
+				c.params = append(c.params, NewParam(arg.Name(), arg.Type(), arg.Default()))
 			}
-			c.params = append(c.params, NewParam(arg.Name(), arg.Type(), valBool))
-			continue
 		}
 	}
 
+	for _, compArg := range c.component.Arguments() {
+		if filled := c.ParameterByName(compArg.Name()); filled == nil {
+			c.params = append(c.params, NewParam(compArg.Name(), compArg.Type(), compArg.Default()))
+		}
+	}
 }
 
 type selector struct {
-	regex             string
-	paramRegex        string
-	keyValueSeparator string
-	keyValueTrimRegex string
+	regex      string
+	paramRegex string
 }
 
 func readCalls(content string, comps []interfaces.Component) []*Call {
 
-	// To prevent read substring regex match
 	calledIndex := [][2]int{}
 
 	selectors := []selector{
 		selector{
-			regex:             `\{\{\s*%s(?:\s+(?:[\w-]+\s*=\s*&quot;[^&]+&quot;|[\w-]+\s*=\s*(?:true|false)))*\s*\}\}`,
-			paramRegex:        `([\w-]+)\s*=\s*&quot;([^&]+)&quot;|([\w-]+)\s*=\s*(true|false)`,
-			keyValueSeparator: `\s*=\s*`,
-			keyValueTrimRegex: `\s*&quot;\s*`,
+			regex:      `\{\{\s*%s(?:\s+(?:[\w-]+\s*=\s*&quot;[^&]+&quot;|[\w-]+\s*=\s*(?:true|false)))*\s*\}\}`,
+			paramRegex: `([\w-]+)\s*=\s*`,
 		},
 		selector{
-			regex:             `\{\{\s*%s(?:\s+(?:[\w-]+\s*=\s*&apos;[^&]+&apos;|[\w-]+\s*=\s*(?:true|false)))*\s*\}\}`,
-			paramRegex:        `([\w-]+)\s*=\s*&apos;([^&]+)&apos;|([\w-]+)\s*=\s*(true|false)`,
-			keyValueSeparator: `\s*=\s*`,
-			keyValueTrimRegex: `\s*&apos;\s*`,
-		},
-		selector{
-			regex:             `\{\{\s*%s(?:\s+(?:[\w-]+\s*=\s*"[^"]*"|[\w-]+\s*=\s*(?:true|false)))*\s*\}\}`,
-			paramRegex:        `([\w-]+)\s*=\s*"([^"]+)"|([\w-]+)\s*=\s*(true|false)`,
-			keyValueSeparator: `\s*=\s*`,
-			keyValueTrimRegex: `\s*"\s*|\s*"\s*`,
-		},
-		selector{
-			regex:             `\{\{\s*%s(?:\s+(?:[\w-]+\s*=\s*'[^']*'|[\w-]+\s*=\s*(?:true|false)))*\s*\}\}`,
-			paramRegex:        `([\w-]+)\s*=\s*'([^']+)'|([\w-]+)\s*=\s*(true|false)`,
-			keyValueSeparator: `\s*=\s*`,
-			keyValueTrimRegex: `\s*'\s*|\s*'\s*`,
+			regex:      `\{\{\s*%s(?:\s+[\w-]+\s*=\s*.*\s*)+\s*\}\}`,
+			paramRegex: `([\w-]+)\s*=\s*`,
 		},
 		selector{
 			regex: `\{\{\s*%s\s*\}\}`,
@@ -138,7 +101,7 @@ func readCalls(content string, comps []interfaces.Component) []*Call {
 			for _, index := range indexes {
 				if !alreadyRead(calledIndex, index[0], index[1]) {
 					call := NewCall(comp, index[0], index[1])
-					call.fillArgsByRegex(string([]rune(content)[call.start:call.end]), slc.paramRegex, slc.keyValueSeparator, slc.keyValueTrimRegex)
+					call.fillArgsByRegex(string([]rune(content)[call.start:call.end]), slc.paramRegex)
 					calls = append(calls, call)
 					calledIndex = append(calledIndex, [2]int{index[0], index[1]})
 				}

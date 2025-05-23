@@ -78,13 +78,30 @@ func getValueWithType(val string) (bool, any, string) {
 		return false, nil, ""
 	}
 
-	if val == "true" || val == "false" {
-		return true, val, "bool"
+	quoteIndexes := ustrings.FindAllStringIndex(val, `".*"`)
+
+	if len(quoteIndexes) > 0 {
+		return true, string([]rune(val)[1 : quoteIndexes[0][1]-1]), "string"
 	}
 
-	if (val[0] == '"' && val[ustrings.LastRuneIndex(val)] == '"') || (val[0] == '\'' && val[ustrings.LastRuneIndex(val)] == '\'') {
+	htmlQuoteIndexes := ustrings.FindAllStringIndex(val, "&quot;.*&quot;")
 
-		return true, val[1:ustrings.LastRuneIndex(val)], "string"
+	if len(htmlQuoteIndexes) > 0 {
+		return true, string([]rune(val)[6 : htmlQuoteIndexes[0][1]-6]), "string"
+	}
+
+	boolIndexes := ustrings.FindAllStringIndex(val, `true|false`)
+
+	if len(boolIndexes) > 0 {
+
+		val := string([]rune(val)[boolIndexes[0][0]:boolIndexes[0][1]])
+		boolVal := false
+
+		if val == "true" {
+			boolVal = true
+		}
+
+		return true, boolVal, "bool"
 	}
 
 	return false, nil, ""
