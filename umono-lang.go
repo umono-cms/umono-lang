@@ -142,7 +142,7 @@ func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, d
 		handledRawContent := call.Component().RawContent()
 
 		for _, prm := range call.Parameters() {
-			handledRawContent = strings.ReplaceAll(handledRawContent, "$"+prm.Name(), prm.Value().(string))
+			handledRawContent = strings.ReplaceAll(handledRawContent, "$"+prm.Name(), prm.ValueAsString())
 		}
 
 		subHandled := ul.handleComps(comps, handledRawContent, deep+1, cursor)
