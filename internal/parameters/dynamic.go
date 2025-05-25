@@ -1,4 +1,4 @@
-package arguments
+package parameters
 
 import "github.com/umono-cms/umono-lang/interfaces"
 
@@ -8,7 +8,7 @@ type Dynamic struct {
 	deflt any
 }
 
-func NewDynamicArg(name, typ string, deflt any) interfaces.Argument {
+func NewDynamicParam(name, typ string, deflt any) interfaces.Parameter {
 	return &Dynamic{
 		name:  name,
 		typ:   typ,

@@ -2,7 +2,7 @@ package components
 
 import (
 	"github.com/umono-cms/umono-lang/interfaces"
-	args "github.com/umono-cms/umono-lang/internal/arguments/link"
+	params "github.com/umono-cms/umono-lang/internal/parameters/link"
 )
 
 type Link struct{}
@@ -11,11 +11,11 @@ func (*Link) Name() string {
 	return "LINK"
 }
 
-func (*Link) Arguments() []interfaces.Argument {
-	return []interfaces.Argument{
-		&args.URL{},
-		&args.Text{},
-		&args.NewTab{},
+func (*Link) Parameters() []interfaces.Parameter {
+	return []interfaces.Parameter{
+		&params.URL{},
+		&params.Text{},
+		&params.NewTab{},
 	}
 }
 

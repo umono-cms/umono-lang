@@ -1,108 +1,45 @@
 package umonolang
 
-import (
-	"strings"
+type argument struct {
+	name  string
+	typ   string
+	value any
+}
 
-	"github.com/umono-cms/umono-lang/interfaces"
-	"github.com/umono-cms/umono-lang/internal/arguments"
-	ustrings "github.com/umono-cms/umono-lang/internal/utils/strings"
-)
-
-func readArgs(raw string, indexes [][]int) []interfaces.Argument {
-
-	if raw == "" {
-		return []interfaces.Argument{}
+func newArg(name, typ string, value any) *argument {
+	return &argument{
+		name:  name,
+		typ:   typ,
+		value: value,
 	}
+}
 
-	args := []interfaces.Argument{}
-	for i := 0; i < len(indexes); i++ {
+func (a *argument) Name() string {
+	return a.name
+}
 
-		start := indexes[i][0]
+func (a *argument) Type() string {
+	return a.typ
+}
 
-		var end int
-		if i != len(indexes)-1 {
-			end = indexes[i+1][0]
+func (a *argument) Value() any {
+	return a.value
+}
+
+func (a *argument) SetValue(val any) {
+	a.value = val
+}
+
+func (a *argument) ValueAsString() string {
+	if a.typ == "string" {
+		return a.value.(string)
+	}
+	if a.typ == "bool" {
+		if val := a.value.(bool); val {
+			return "true"
 		} else {
-			newLineIndex := strings.Index(raw[start:], "\n")
-			if newLineIndex != -1 {
-				end = start + newLineIndex
-			} else {
-				end = ustrings.LastRuneIndex(raw) + 1
-			}
-		}
-
-		ok, key, val := ustrings.SeparateKeyValue(raw[start:end], `\s*=\s*`, ``)
-		if !ok || !validArgKey(key) {
-			break
-		}
-
-		invalidValue, valAny, typ := getValueWithType(val)
-		if !invalidValue {
-			break
-		}
-
-		args = append(args, arguments.NewDynamicArg(key, typ, valAny))
-	}
-
-	return args
-}
-
-func validArgKey(key string) bool {
-
-	valTrimmed := strings.TrimSpace(key)
-
-	if valTrimmed[0] == '-' || valTrimmed[len(valTrimmed)-1] == '-' {
-		return false
-	}
-
-	if strings.ContainsRune(valTrimmed, '_') {
-		return false
-	}
-
-	valRune := []rune(valTrimmed)
-
-	for i := 0; i < len(valRune)-1; i++ {
-		if valRune[i] == '-' && valRune[i+1] == '-' {
-			return false
+			return "false"
 		}
 	}
-
-	return true
-}
-
-func getValueWithType(val string) (bool, any, string) {
-
-	val = strings.TrimSpace(val)
-
-	if val == "" {
-		return false, nil, ""
-	}
-
-	quoteIndexes := ustrings.FindAllStringIndex(val, `".*"`)
-
-	if len(quoteIndexes) > 0 {
-		return true, string([]rune(val)[1 : quoteIndexes[0][1]-1]), "string"
-	}
-
-	htmlQuoteIndexes := ustrings.FindAllStringIndex(val, "&quot;.*&quot;")
-
-	if len(htmlQuoteIndexes) > 0 {
-		return true, string([]rune(val)[6 : htmlQuoteIndexes[0][1]-6]), "string"
-	}
-
-	boolIndexes := ustrings.FindAllStringIndex(val, `true|false`)
-
-	if len(boolIndexes) > 0 {
-
-		val := string([]rune(val)[boolIndexes[0][0]:boolIndexes[0][1]])
-		boolVal := false
-
-		if val == "true" {
-			boolVal = true
-		}
-
-		return true, boolVal, "bool"
-	}
-
-	return false, nil, ""
+	return ""
 }

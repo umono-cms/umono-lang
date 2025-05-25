@@ -2,7 +2,7 @@ package interfaces
 
 type Component interface {
 	Name() string
-	Arguments() []Argument
+	Parameters() []Parameter
 	RawContent() string
 	NeedToConvert() bool
 }

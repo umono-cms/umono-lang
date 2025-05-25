@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/umono-cms/umono-lang/interfaces"
-	"github.com/umono-cms/umono-lang/internal/arguments"
 	"github.com/umono-cms/umono-lang/internal/components"
+	"github.com/umono-cms/umono-lang/internal/parameters"
 )
 
 type callTestSuite struct {
@@ -74,24 +74,24 @@ func (s *callTestSuite) TestReadCalls() {
 				components.NewCustom("ABC", "no-matter"),
 			},
 			[]*call{
-				&call{components.NewCustom("ABC", "no-matter"), 0, 9, []interfaces.Parameter{}},
+				&call{components.NewCustom("ABC", "no-matter"), 0, 9, []interfaces.Argument{}},
 			},
 		},
 		{
 			"{{ ABC param-1=\"val-1\" param-2=\"val-2\" }}",
 			[]interfaces.Component{
-				components.NewCustomWithArgs("ABC", "no-matter", []interfaces.Argument{
-					arguments.NewDynamicArg("param-1", "string", "val-1"),
-					arguments.NewDynamicArg("param-2", "string", "val-2"),
+				components.NewCustomWithParams("ABC", "no-matter", []interfaces.Parameter{
+					parameters.NewDynamicParam("param-1", "string", "val-1"),
+					parameters.NewDynamicParam("param-2", "string", "val-2"),
 				}),
 			},
 			[]*call{
-				&call{components.NewCustomWithArgs("ABC", "no-matter", []interfaces.Argument{
-					arguments.NewDynamicArg("param-1", "string", ""),
-					arguments.NewDynamicArg("param-2", "string", ""),
-				}), 0, 41, []interfaces.Parameter{
-					newParam("param-1", "string", "val-1"),
-					newParam("param-2", "string", "val-2"),
+				&call{components.NewCustomWithParams("ABC", "no-matter", []interfaces.Parameter{
+					parameters.NewDynamicParam("param-1", "string", ""),
+					parameters.NewDynamicParam("param-2", "string", ""),
+				}), 0, 41, []interfaces.Argument{
+					newArg("param-1", "string", "val-1"),
+					newArg("param-2", "string", "val-2"),
 				}},
 			},
 		},
@@ -102,44 +102,44 @@ func (s *callTestSuite) TestReadCalls() {
 				components.NewCustom("XYZ", "no-matter"),
 			},
 			[]*call{
-				&call{components.NewCustom("ABC", "no-matter"), 0, 3, []interfaces.Parameter{}},
-				&call{components.NewCustom("XYZ", "no-matter"), 4, 7, []interfaces.Parameter{}},
+				&call{components.NewCustom("ABC", "no-matter"), 0, 3, []interfaces.Argument{}},
+				&call{components.NewCustom("XYZ", "no-matter"), 4, 7, []interfaces.Argument{}},
 			},
 		},
 		{
 			"XYZ",
 			[]interfaces.Component{
-				components.NewCustomWithArgs("XYZ", "no-matter", []interfaces.Argument{
-					arguments.NewDynamicArg("param", "string", "default-value"),
+				components.NewCustomWithParams("XYZ", "no-matter", []interfaces.Parameter{
+					parameters.NewDynamicParam("param", "string", "default-value"),
 				}),
 			},
 			[]*call{
-				&call{components.NewCustomWithArgs("XYZ", "no-matter", []interfaces.Argument{
-					arguments.NewDynamicArg("param", "string", "default-value"),
-				}), 0, 3, []interfaces.Parameter{
-					newParam("param", "string", "default-value"),
+				&call{components.NewCustomWithParams("XYZ", "no-matter", []interfaces.Parameter{
+					parameters.NewDynamicParam("param", "string", "default-value"),
+				}), 0, 3, []interfaces.Argument{
+					newArg("param", "string", "default-value"),
 				}},
 			},
 		},
 		{
 			"{{ LINK url=\"https://umono.io\" text=\"click me!\" new-tab=true }}",
 			[]interfaces.Component{
-				components.NewCustomWithArgs("LINK", "no-matter", []interfaces.Argument{
-					arguments.NewDynamicArg("url", "string", ""),
-					arguments.NewDynamicArg("text", "string", ""),
-					arguments.NewDynamicArg("new-tab", "bool", false),
+				components.NewCustomWithParams("LINK", "no-matter", []interfaces.Parameter{
+					parameters.NewDynamicParam("url", "string", ""),
+					parameters.NewDynamicParam("text", "string", ""),
+					parameters.NewDynamicParam("new-tab", "bool", false),
 				}),
 			},
 			[]*call{
 				&call{
-					components.NewCustomWithArgs("LINK", "no-matter", []interfaces.Argument{
-						arguments.NewDynamicArg("url", "string", ""),
-						arguments.NewDynamicArg("text", "string", ""),
-						arguments.NewDynamicArg("new-tab", "bool", false),
-					}), 0, 63, []interfaces.Parameter{
-						newParam("url", "string", "https://umono.io"),
-						newParam("text", "string", "click me!"),
-						newParam("new-tab", "bool", true),
+					components.NewCustomWithParams("LINK", "no-matter", []interfaces.Parameter{
+						parameters.NewDynamicParam("url", "string", ""),
+						parameters.NewDynamicParam("text", "string", ""),
+						parameters.NewDynamicParam("new-tab", "bool", false),
+					}), 0, 63, []interfaces.Argument{
+						newArg("url", "string", "https://umono.io"),
+						newArg("text", "string", "click me!"),
+						newArg("new-tab", "bool", true),
 					},
 				},
 			},
@@ -161,16 +161,16 @@ func (s *callTestSuite) TestReadCalls() {
 			require.Equal(s.T(), sCall.Start(), call.Start(), errMsg)
 			require.Equal(s.T(), sCall.End(), call.End(), errMsg)
 
-			sParams := sCall.Parameters()
-			callParams := call.Parameters()
+			sArgs := sCall.Arguments()
+			callArgs := call.Arguments()
 
-			for j := 0; j < len(sParams); j++ {
+			for j := 0; j < len(sArgs); j++ {
 				errMsg := errMsg + ", param index: " + strconv.Itoa(j)
-				require.Equal(s.T(), sParams[j].Name(), callParams[j].Name(), errMsg)
-				if sParams[j].Type() == "string" {
-					require.Equal(s.T(), sParams[j].Value().(string), callParams[j].Value().(string), errMsg)
-				} else if sParams[j].Type() == "bool" {
-					require.Equal(s.T(), sParams[j].Value().(bool), callParams[j].Value().(bool), errMsg)
+				require.Equal(s.T(), sArgs[j].Name(), callArgs[j].Name(), errMsg)
+				if sArgs[j].Type() == "string" {
+					require.Equal(s.T(), sArgs[j].Value().(string), callArgs[j].Value().(string), errMsg)
+				} else if sArgs[j].Type() == "bool" {
+					require.Equal(s.T(), sArgs[j].Value().(bool), callArgs[j].Value().(bool), errMsg)
 				}
 			}
 		}

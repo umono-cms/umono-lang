@@ -39,9 +39,9 @@ func (h *HTML) ConvertBuiltInComp(call interfaces.Call) string {
 }
 
 func (h *HTML) renderLink(call interfaces.Call) string {
-	text := call.ParameterByName("text")
-	url := call.ParameterByName("url")
-	newTab := call.ParameterByName("new-tab")
+	text := call.ArgumentByName("text")
+	url := call.ArgumentByName("url")
+	newTab := call.ArgumentByName("new-tab")
 
 	if text == nil || url == nil || newTab == nil {
 		// NOTE: Unexpected
