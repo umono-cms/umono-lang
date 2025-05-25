@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/umono-cms/umono-lang/interfaces"
-	ustrings "github.com/umono-cms/umono-lang/utils/strings"
+	ustrings "github.com/umono-cms/umono-lang/internal/utils/strings"
 )
 
 type Call struct {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/interfaces"
-	ustrings "github.com/umono-cms/umono-lang/utils/strings"
+	ustrings "github.com/umono-cms/umono-lang/internal/utils/strings"
 )
 
 func builtInComps() []interfaces.Component {

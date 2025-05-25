@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"github.com/umono-cms/umono-lang/utils/mocks"
-	"github.com/umono-cms/umono-lang/utils/test"
+	"github.com/umono-cms/umono-lang/internal/utils/mocks"
+	"github.com/umono-cms/umono-lang/internal/utils/test"
 )
 
 type UmonoLangTestSuite struct {

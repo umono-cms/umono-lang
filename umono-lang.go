@@ -8,7 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/umono-cms/umono-lang/interfaces"
-	ustrings "github.com/umono-cms/umono-lang/utils/strings"
+	ustrings "github.com/umono-cms/umono-lang/internal/utils/strings"
 )
 
 type UmonoLang struct {

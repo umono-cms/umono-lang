@@ -1,8 +1,8 @@
 package components
 
 import (
-	args "github.com/umono-cms/umono-lang/arguments/link"
 	"github.com/umono-cms/umono-lang/interfaces"
+	args "github.com/umono-cms/umono-lang/internal/arguments/link"
 )
 
 type Link struct{}
