@@ -8,8 +8,8 @@ func (*S404) Name() string {
 	return "404"
 }
 
-func (*S404) Arguments() []interfaces.Argument {
-	return []interfaces.Argument{}
+func (*S404) Parameters() []interfaces.Parameter {
+	return []interfaces.Parameter{}
 }
 
 func (*S404) RawContent() string  { return "" }

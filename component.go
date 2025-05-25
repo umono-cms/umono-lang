@@ -75,9 +75,9 @@ func readComp(compName, raw string) interfaces.Component {
 	}
 
 	keyValueIndexes := ustrings.FindAllStringIndex(raw, `([\w-]+)\s*=\s*`)
-	args := readArgs(raw, keyValueIndexes)
+	params := readParams(raw, keyValueIndexes)
 
-	return components.NewCustomWithArgs(name, getContentBody(raw), args)
+	return components.NewCustomWithParams(name, getContentBody(raw), params)
 }
 
 func getCompName(raw string) string {

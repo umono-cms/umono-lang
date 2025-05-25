@@ -141,8 +141,8 @@ func (ul *UmonoLang) handleComps(comps []interfaces.Component, content string, d
 
 		handledRawContent := call.Component().RawContent()
 
-		for _, prm := range call.Parameters() {
-			handledRawContent = strings.ReplaceAll(handledRawContent, "$"+prm.Name(), prm.ValueAsString())
+		for _, arg := range call.Arguments() {
+			handledRawContent = strings.ReplaceAll(handledRawContent, "$"+arg.Name(), arg.ValueAsString())
 		}
 
 		subHandled := ul.handleComps(comps, handledRawContent, deep+1, cursor)
@@ -168,10 +168,10 @@ func (ul *UmonoLang) convert(comps []interfaces.Component, handled string) strin
 			continue
 		}
 
-		for _, prm := range call.Parameters() {
-			if prm.Type() == "string" {
+		for _, arg := range call.Arguments() {
+			if arg.Type() == "string" {
 				cursor := 0
-				prm.SetValue(ul.handleComps(comps, prm.ValueAsString(), 1, cursor))
+				arg.SetValue(ul.handleComps(comps, arg.ValueAsString(), 1, cursor))
 			}
 		}
 

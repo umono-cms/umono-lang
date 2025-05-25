@@ -11,7 +11,7 @@ type call struct {
 	component interfaces.Component
 	start     int
 	end       int
-	params    []interfaces.Parameter
+	args      []interfaces.Argument
 }
 
 func newCall(component interfaces.Component, start int, end int) *call {
@@ -34,35 +34,35 @@ func (c *call) End() int {
 	return c.end
 }
 
-func (c *call) Parameters() []interfaces.Parameter {
-	return c.params
+func (c *call) Arguments() []interfaces.Argument {
+	return c.args
 }
 
-func (c *call) ParameterByName(name string) interfaces.Parameter {
-	for _, p := range c.params {
-		if p.Name() == name {
-			return p
+func (c *call) ArgumentByName(name string) interfaces.Argument {
+	for _, arg := range c.args {
+		if arg.Name() == name {
+			return arg
 		}
 	}
 	return nil
 }
 
-func (c *call) fillArgsByRegex(content, regex string) {
+func (c *call) fillParamsByRegex(content, regex string) {
 
 	keyValueIndexes := ustrings.FindAllStringIndex(content, regex)
-	args := readArgs(content, keyValueIndexes)
+	params := readParams(content, keyValueIndexes)
 
-	for _, compArg := range c.component.Arguments() {
-		for _, arg := range args {
-			if compArg.Name() == arg.Name() && compArg.Type() == arg.Type() {
-				c.params = append(c.params, newParam(arg.Name(), arg.Type(), arg.Default()))
+	for _, compParam := range c.component.Parameters() {
+		for _, param := range params {
+			if compParam.Name() == param.Name() && compParam.Type() == param.Type() {
+				c.args = append(c.args, newArg(param.Name(), param.Type(), param.Default()))
 			}
 		}
 	}
 
-	for _, compArg := range c.component.Arguments() {
-		if filled := c.ParameterByName(compArg.Name()); filled == nil {
-			c.params = append(c.params, newParam(compArg.Name(), compArg.Type(), compArg.Default()))
+	for _, compParam := range c.component.Parameters() {
+		if filled := c.ArgumentByName(compParam.Name()); filled == nil {
+			c.args = append(c.args, newArg(compParam.Name(), compParam.Type(), compParam.Default()))
 		}
 	}
 }
@@ -101,7 +101,7 @@ func readCalls(content string, comps []interfaces.Component) []*call {
 			for _, index := range indexes {
 				if !alreadyRead(calledIndex, index[0], index[1]) {
 					call := newCall(comp, index[0], index[1])
-					call.fillArgsByRegex(string([]rune(content)[call.start:call.end]), slc.paramRegex)
+					call.fillParamsByRegex(string([]rune(content)[call.start:call.end]), slc.paramRegex)
 					calls = append(calls, call)
 					calledIndex = append(calledIndex, [2]int{index[0], index[1]})
 				}
