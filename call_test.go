@@ -6,9 +6,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/interfaces"
 	"github.com/umono-cms/umono-lang/internal/arguments"
+	"github.com/umono-cms/umono-lang/internal/components"
 )
 
 type CallTestSuite struct {

@@ -3,8 +3,8 @@ package umonolang
 import (
 	"strings"
 
-	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/interfaces"
+	"github.com/umono-cms/umono-lang/internal/components"
 	ustrings "github.com/umono-cms/umono-lang/internal/utils/strings"
 )
 
