@@ -5,15 +5,15 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/interfaces"
+	"github.com/umono-cms/umono-lang/internal/components"
 )
 
-type ComponentTestSuite struct {
+type componentTestSuite struct {
 	suite.Suite
 }
 
-func (suite *ComponentTestSuite) TestOverrideComps() {
+func (suite *componentTestSuite) TestOverrideComps() {
 	comps := []interfaces.Component{
 		components.NewCustom("A", "a"),
 		components.NewCustom("B", "b"),
@@ -32,5 +32,5 @@ func (suite *ComponentTestSuite) TestOverrideComps() {
 }
 
 func TestComponentTestSuite(t *testing.T) {
-	suite.Run(t, new(ComponentTestSuite))
+	suite.Run(t, new(componentTestSuite))
 }

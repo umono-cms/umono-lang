@@ -3,9 +3,9 @@ package umonolang
 import (
 	"strings"
 
-	"github.com/umono-cms/umono-lang/components"
 	"github.com/umono-cms/umono-lang/interfaces"
-	ustrings "github.com/umono-cms/umono-lang/utils/strings"
+	"github.com/umono-cms/umono-lang/internal/components"
+	ustrings "github.com/umono-cms/umono-lang/internal/utils/strings"
 )
 
 func builtInComps() []interfaces.Component {

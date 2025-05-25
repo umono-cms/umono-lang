@@ -3,9 +3,9 @@ package umonolang
 import (
 	"strings"
 
-	"github.com/umono-cms/umono-lang/arguments"
 	"github.com/umono-cms/umono-lang/interfaces"
-	ustrings "github.com/umono-cms/umono-lang/utils/strings"
+	"github.com/umono-cms/umono-lang/internal/arguments"
+	ustrings "github.com/umono-cms/umono-lang/internal/utils/strings"
 )
 
 func readArgs(raw string, indexes [][]int) []interfaces.Argument {

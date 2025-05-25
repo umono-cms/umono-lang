@@ -4,41 +4,41 @@ import (
 	"fmt"
 
 	"github.com/umono-cms/umono-lang/interfaces"
-	ustrings "github.com/umono-cms/umono-lang/utils/strings"
+	ustrings "github.com/umono-cms/umono-lang/internal/utils/strings"
 )
 
-type Call struct {
+type call struct {
 	component interfaces.Component
 	start     int
 	end       int
 	params    []interfaces.Parameter
 }
 
-func NewCall(component interfaces.Component, start int, end int) *Call {
-	return &Call{
+func newCall(component interfaces.Component, start int, end int) *call {
+	return &call{
 		component: component,
 		start:     start,
 		end:       end,
 	}
 }
 
-func (c *Call) Component() interfaces.Component {
+func (c *call) Component() interfaces.Component {
 	return c.component
 }
 
-func (c *Call) Start() int {
+func (c *call) Start() int {
 	return c.start
 }
 
-func (c *Call) End() int {
+func (c *call) End() int {
 	return c.end
 }
 
-func (c *Call) Parameters() []interfaces.Parameter {
+func (c *call) Parameters() []interfaces.Parameter {
 	return c.params
 }
 
-func (c *Call) ParameterByName(name string) interfaces.Parameter {
+func (c *call) ParameterByName(name string) interfaces.Parameter {
 	for _, p := range c.params {
 		if p.Name() == name {
 			return p
@@ -47,7 +47,7 @@ func (c *Call) ParameterByName(name string) interfaces.Parameter {
 	return nil
 }
 
-func (c *Call) fillArgsByRegex(content, regex string) {
+func (c *call) fillArgsByRegex(content, regex string) {
 
 	keyValueIndexes := ustrings.FindAllStringIndex(content, regex)
 	args := readArgs(content, keyValueIndexes)
@@ -55,14 +55,14 @@ func (c *Call) fillArgsByRegex(content, regex string) {
 	for _, compArg := range c.component.Arguments() {
 		for _, arg := range args {
 			if compArg.Name() == arg.Name() && compArg.Type() == arg.Type() {
-				c.params = append(c.params, NewParam(arg.Name(), arg.Type(), arg.Default()))
+				c.params = append(c.params, newParam(arg.Name(), arg.Type(), arg.Default()))
 			}
 		}
 	}
 
 	for _, compArg := range c.component.Arguments() {
 		if filled := c.ParameterByName(compArg.Name()); filled == nil {
-			c.params = append(c.params, NewParam(compArg.Name(), compArg.Type(), compArg.Default()))
+			c.params = append(c.params, newParam(compArg.Name(), compArg.Type(), compArg.Default()))
 		}
 	}
 }
@@ -72,7 +72,7 @@ type selector struct {
 	paramRegex string
 }
 
-func readCalls(content string, comps []interfaces.Component) []*Call {
+func readCalls(content string, comps []interfaces.Component) []*call {
 
 	calledIndex := [][2]int{}
 
@@ -93,14 +93,14 @@ func readCalls(content string, comps []interfaces.Component) []*Call {
 		},
 	}
 
-	calls := []*Call{}
+	calls := []*call{}
 
 	for _, slc := range selectors {
 		for _, comp := range comps {
 			indexes := ustrings.FindAllStringIndex(content, fmt.Sprintf(slc.regex, comp.Name()))
 			for _, index := range indexes {
 				if !alreadyRead(calledIndex, index[0], index[1]) {
-					call := NewCall(comp, index[0], index[1])
+					call := newCall(comp, index[0], index[1])
 					call.fillArgsByRegex(string([]rune(content)[call.start:call.end]), slc.paramRegex)
 					calls = append(calls, call)
 					calledIndex = append(calledIndex, [2]int{index[0], index[1]})
@@ -121,10 +121,10 @@ func alreadyRead(indexes [][2]int, start, end int) bool {
 	return false
 }
 
-func sortCallsByLinear(calls []*Call) []*Call {
+func sortCallsByLinear(calls []*call) []*call {
 
-	sorted := []*Call{}
-	clls := append([]*Call{}, calls...)
+	sorted := []*call{}
+	clls := append([]*call{}, calls...)
 
 	for {
 		l, remainder := least(clls)
@@ -132,17 +132,17 @@ func sortCallsByLinear(calls []*Call) []*Call {
 			break
 		}
 
-		sorted = append([]*Call{l}, sorted...)
+		sorted = append([]*call{l}, sorted...)
 		clls = remainder
 	}
 
 	return sorted
 }
 
-func least(calls []*Call) (*Call, []*Call) {
+func least(calls []*call) (*call, []*call) {
 
 	if len(calls) == 0 {
-		return nil, []*Call{}
+		return nil, []*call{}
 	}
 
 	l := calls[0]
@@ -155,7 +155,7 @@ func least(calls []*Call) (*Call, []*Call) {
 		}
 	}
 
-	remainder := []*Call{}
+	remainder := []*call{}
 	for _, call := range calls {
 		if start != call.Start() {
 			remainder = append(remainder, call)
