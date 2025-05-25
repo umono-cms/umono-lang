@@ -11,16 +11,16 @@ import (
 	"github.com/umono-cms/umono-lang/internal/utils/test"
 )
 
-type UmonoLangTestSuite struct {
+type umonoLangTestSuite struct {
 	suite.Suite
 	umonoLang *UmonoLang
 }
 
-func (s *UmonoLangTestSuite) SetupTest() {
+func (s *umonoLangTestSuite) SetupTest() {
 	s.umonoLang = New(new(mocks.Converter))
 }
 
-func (s *UmonoLangTestSuite) TestConvert() {
+func (s *umonoLangTestSuite) TestConvert() {
 	inputFileReader := test.NewFileReader("test_assets/main/inputs", "ul")
 	outputFileReader := test.NewFileReader("test_assets/main/outputs", "mock")
 
@@ -91,7 +91,7 @@ func (s *UmonoLangTestSuite) TestConvert() {
 	}
 }
 
-func (s *UmonoLangTestSuite) TestSetGlobalComponentOK() {
+func (s *umonoLangTestSuite) TestSetGlobalComponentOK() {
 	s.umonoLang.SetGlobalComponent("HELLO_WORLD", "hello!")
 
 	require.Equal(s.T(), int(1), len(s.umonoLang.globalComps))
@@ -101,13 +101,13 @@ func (s *UmonoLangTestSuite) TestSetGlobalComponentOK() {
 	require.Equal(s.T(), "hello!", hello.RawContent())
 }
 
-func (s *UmonoLangTestSuite) TestSetGlobalComponentSyntaxError() {
+func (s *umonoLangTestSuite) TestSetGlobalComponentSyntaxError() {
 	err := s.umonoLang.SetGlobalComponent("HELLO WORLD", "hello!")
 	require.NotNil(s.T(), err)
 	require.True(s.T(), strings.HasPrefix(err.Error(), "SYNTAX_ERROR"))
 }
 
-func (s *UmonoLangTestSuite) TestRemoveGlobalComponentOK() {
+func (s *umonoLangTestSuite) TestRemoveGlobalComponentOK() {
 	s.umonoLang.SetGlobalComponent("HELLO_WORLD", "hello!")
 	err := s.umonoLang.RemoveGlobalComponent("HELLO_WORLD")
 	require.Nil(s.T(), err)
@@ -116,18 +116,18 @@ func (s *UmonoLangTestSuite) TestRemoveGlobalComponentOK() {
 	require.Nil(s.T(), found)
 }
 
-func (s *UmonoLangTestSuite) TestRemoveGlobalComponentSyntaxError() {
+func (s *umonoLangTestSuite) TestRemoveGlobalComponentSyntaxError() {
 	err := s.umonoLang.RemoveGlobalComponent("hello world")
 	require.NotNil(s.T(), err)
 	require.True(s.T(), strings.HasPrefix(err.Error(), "SYNTAX_ERROR"))
 }
 
-func (s *UmonoLangTestSuite) TestRemoveGlobalComponentNotFound() {
+func (s *umonoLangTestSuite) TestRemoveGlobalComponentNotFound() {
 	err := s.umonoLang.RemoveGlobalComponent("HELLO_WORLD")
 	require.NotNil(s.T(), err)
 	require.True(s.T(), strings.HasPrefix(err.Error(), "NOT_FOUND"))
 }
 
 func TestUmonoLangTestSuite(t *testing.T) {
-	suite.Run(t, new(UmonoLangTestSuite))
+	suite.Run(t, new(umonoLangTestSuite))
 }

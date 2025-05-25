@@ -11,11 +11,11 @@ import (
 	"github.com/umono-cms/umono-lang/internal/components"
 )
 
-type CallTestSuite struct {
+type callTestSuite struct {
 	suite.Suite
 }
 
-func (s *CallTestSuite) TestAlreadyRead() {
+func (s *callTestSuite) TestAlreadyRead() {
 	for sI, scene := range []struct {
 		indexes [][2]int
 		start   int
@@ -62,7 +62,7 @@ func (s *CallTestSuite) TestAlreadyRead() {
 	}
 }
 
-func (s *CallTestSuite) TestReadCalls() {
+func (s *callTestSuite) TestReadCalls() {
 	for sI, scene := range []struct {
 		content string
 		comps   []interfaces.Component
@@ -178,5 +178,5 @@ func (s *CallTestSuite) TestReadCalls() {
 }
 
 func TestCallTestSuite(t *testing.T) {
-	suite.Run(t, new(CallTestSuite))
+	suite.Run(t, new(callTestSuite))
 }
