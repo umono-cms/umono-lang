@@ -66,15 +66,15 @@ func (s *CallTestSuite) TestReadCalls() {
 	for sI, scene := range []struct {
 		content string
 		comps   []interfaces.Component
-		results []*Call
+		results []*call
 	}{
 		{
 			"{{ ABC }}",
 			[]interfaces.Component{
 				components.NewCustom("ABC", "no-matter"),
 			},
-			[]*Call{
-				&Call{components.NewCustom("ABC", "no-matter"), 0, 9, []interfaces.Parameter{}},
+			[]*call{
+				&call{components.NewCustom("ABC", "no-matter"), 0, 9, []interfaces.Parameter{}},
 			},
 		},
 		{
@@ -85,13 +85,13 @@ func (s *CallTestSuite) TestReadCalls() {
 					arguments.NewDynamicArg("param-2", "string", "val-2"),
 				}),
 			},
-			[]*Call{
-				&Call{components.NewCustomWithArgs("ABC", "no-matter", []interfaces.Argument{
+			[]*call{
+				&call{components.NewCustomWithArgs("ABC", "no-matter", []interfaces.Argument{
 					arguments.NewDynamicArg("param-1", "string", ""),
 					arguments.NewDynamicArg("param-2", "string", ""),
 				}), 0, 41, []interfaces.Parameter{
-					NewParam("param-1", "string", "val-1"),
-					NewParam("param-2", "string", "val-2"),
+					newParam("param-1", "string", "val-1"),
+					newParam("param-2", "string", "val-2"),
 				}},
 			},
 		},
@@ -101,9 +101,9 @@ func (s *CallTestSuite) TestReadCalls() {
 				components.NewCustom("ABC", "no-matter"),
 				components.NewCustom("XYZ", "no-matter"),
 			},
-			[]*Call{
-				&Call{components.NewCustom("ABC", "no-matter"), 0, 3, []interfaces.Parameter{}},
-				&Call{components.NewCustom("XYZ", "no-matter"), 4, 7, []interfaces.Parameter{}},
+			[]*call{
+				&call{components.NewCustom("ABC", "no-matter"), 0, 3, []interfaces.Parameter{}},
+				&call{components.NewCustom("XYZ", "no-matter"), 4, 7, []interfaces.Parameter{}},
 			},
 		},
 		{
@@ -113,11 +113,11 @@ func (s *CallTestSuite) TestReadCalls() {
 					arguments.NewDynamicArg("param", "string", "default-value"),
 				}),
 			},
-			[]*Call{
-				&Call{components.NewCustomWithArgs("XYZ", "no-matter", []interfaces.Argument{
+			[]*call{
+				&call{components.NewCustomWithArgs("XYZ", "no-matter", []interfaces.Argument{
 					arguments.NewDynamicArg("param", "string", "default-value"),
 				}), 0, 3, []interfaces.Parameter{
-					NewParam("param", "string", "default-value"),
+					newParam("param", "string", "default-value"),
 				}},
 			},
 		},
@@ -130,16 +130,16 @@ func (s *CallTestSuite) TestReadCalls() {
 					arguments.NewDynamicArg("new-tab", "bool", false),
 				}),
 			},
-			[]*Call{
-				&Call{
+			[]*call{
+				&call{
 					components.NewCustomWithArgs("LINK", "no-matter", []interfaces.Argument{
 						arguments.NewDynamicArg("url", "string", ""),
 						arguments.NewDynamicArg("text", "string", ""),
 						arguments.NewDynamicArg("new-tab", "bool", false),
 					}), 0, 63, []interfaces.Parameter{
-						NewParam("url", "string", "https://umono.io"),
-						NewParam("text", "string", "click me!"),
-						NewParam("new-tab", "bool", true),
+						newParam("url", "string", "https://umono.io"),
+						newParam("text", "string", "click me!"),
+						newParam("new-tab", "bool", true),
 					},
 				},
 			},

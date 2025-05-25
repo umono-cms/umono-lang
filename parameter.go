@@ -1,36 +1,36 @@
 package umonolang
 
-type Parameter struct {
+type parameter struct {
 	name  string
 	typ   string
 	value any
 }
 
-func NewParam(name, typ string, value any) *Parameter {
-	return &Parameter{
+func newParam(name, typ string, value any) *parameter {
+	return &parameter{
 		name:  name,
 		typ:   typ,
 		value: value,
 	}
 }
 
-func (p *Parameter) Name() string {
+func (p *parameter) Name() string {
 	return p.name
 }
 
-func (p *Parameter) Type() string {
+func (p *parameter) Type() string {
 	return p.typ
 }
 
-func (p *Parameter) Value() any {
+func (p *parameter) Value() any {
 	return p.value
 }
 
-func (p *Parameter) SetValue(val any) {
+func (p *parameter) SetValue(val any) {
 	p.value = val
 }
 
-func (p *Parameter) ValueAsString() string {
+func (p *parameter) ValueAsString() string {
 	if p.typ == "string" {
 		return p.value.(string)
 	}
