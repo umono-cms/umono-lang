@@ -8,6 +8,15 @@ import (
 	ustrings "github.com/umono-cms/umono-lang/internal/utils/strings"
 )
 
+func ParameterByName(params []interfaces.Parameter, name string) interfaces.Parameter {
+	for _, param := range params {
+		if param.Name() == "name" {
+			return param
+		}
+	}
+	return nil
+}
+
 func readParams(raw string, indexes [][]int) []interfaces.Parameter {
 
 	if raw == "" {
