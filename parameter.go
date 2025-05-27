@@ -10,7 +10,7 @@ import (
 
 func ParameterByName(params []interfaces.Parameter, name string) interfaces.Parameter {
 	for _, param := range params {
-		if param.Name() == "name" {
+		if param.Name() == name {
 			return param
 		}
 	}
