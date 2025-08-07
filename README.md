@@ -1,6 +1,6 @@
 > **⚠️ This project is no longer actively maintained.**
 >
-> A complete rewrite of this language is being developed based on [Goldmark](https://github.com/yuin/goldmark), using an AST-based architecture. The new version is called **Compono** and is available at: [https://github.com/umono-cms/compono](https://github.com/umono-cms/compono)
+> A complete rewrite of this language is being developed ~~based on [Goldmark](https://github.com/yuin/goldmark)~~, using an AST-based architecture. The new version is called **Compono** and is available at: [https://github.com/umono-cms/compono](https://github.com/umono-cms/compono)
 >
 > UmonoLang will no longer be used in **Umono CMS**.
 
